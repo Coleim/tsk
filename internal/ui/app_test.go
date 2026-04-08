@@ -22,11 +22,11 @@ func createTestStorage(t *testing.T) (*storage.Storage, func()) {
 
 	store, err := storage.NewStorageWithPath(dir)
 	if err != nil {
-		os.RemoveAll(dir)
+		_ = os.RemoveAll(dir)
 		t.Fatalf("Failed to create storage: %v", err)
 	}
 
-	return store, func() { os.RemoveAll(dir) }
+	return store, func() { _ = os.RemoveAll(dir) }
 }
 
 // Helper to create a test app with a board
@@ -39,7 +39,7 @@ func createTestApp(t *testing.T) (*App, func()) {
 	board.AddTask(model.NewTask("task-1", "Task 1", model.StatusToDo))
 	board.AddTask(model.NewTask("task-2", "Task 2", model.StatusToDo))
 	board.AddTask(model.NewTask("task-3", "Task 3", model.StatusInProgress))
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	app := NewApp(store)
 	app.state.SetBoard(board)
@@ -218,11 +218,11 @@ func TestBoardSwitching(t *testing.T) {
 	// Create two boards
 	board1 := model.NewBoard("board-1", "Board 1")
 	board1.AddTask(model.NewTask("task-1", "Task on Board 1", model.StatusToDo))
-	store.SaveBoard(board1)
+	_ = store.SaveBoard(board1)
 
 	board2 := model.NewBoard("board-2", "Board 2")
 	board2.AddTask(model.NewTask("task-2", "Task on Board 2", model.StatusToDo))
-	store.SaveBoard(board2)
+	_ = store.SaveBoard(board2)
 
 	app := NewApp(store)
 	app.state.SetBoard(board1)
@@ -245,7 +245,7 @@ func TestBoardSwitching(t *testing.T) {
 
 	// Before switching, should trigger save if dirty
 	if app.state.Dirty {
-		store.SaveBoard(board1)
+		_ = store.SaveBoard(board1)
 	}
 
 	// Switch board
@@ -370,7 +370,7 @@ func TestPriorityCommands(t *testing.T) {
 
 	// Set priority to High
 	cmd := undo.NewSetPriorityCommand(task, model.PriorityHigh)
-	app.undoManager.Execute(app.state.Board, cmd)
+	_ = app.undoManager.Execute(app.state.Board, cmd)
 
 	if task.Priority != model.PriorityHigh {
 		t.Errorf("Expected PriorityHigh, got %v", task.Priority)
@@ -378,7 +378,7 @@ func TestPriorityCommands(t *testing.T) {
 
 	// Set priority to Medium
 	cmd = undo.NewSetPriorityCommand(task, model.PriorityMedium)
-	app.undoManager.Execute(app.state.Board, cmd)
+	_ = app.undoManager.Execute(app.state.Board, cmd)
 
 	if task.Priority != model.PriorityMedium {
 		t.Errorf("Expected PriorityMedium, got %v", task.Priority)
@@ -386,7 +386,7 @@ func TestPriorityCommands(t *testing.T) {
 
 	// Set priority to Low
 	cmd = undo.NewSetPriorityCommand(task, model.PriorityLow)
-	app.undoManager.Execute(app.state.Board, cmd)
+	_ = app.undoManager.Execute(app.state.Board, cmd)
 
 	if task.Priority != model.PriorityLow {
 		t.Errorf("Expected PriorityLow, got %v", task.Priority)
@@ -394,7 +394,7 @@ func TestPriorityCommands(t *testing.T) {
 
 	// Remove priority
 	cmd = undo.NewSetPriorityCommand(task, model.PriorityNone)
-	app.undoManager.Execute(app.state.Board, cmd)
+	_ = app.undoManager.Execute(app.state.Board, cmd)
 
 	if task.Priority != model.PriorityNone {
 		t.Errorf("Expected PriorityNone, got %v", task.Priority)
@@ -453,7 +453,7 @@ func TestFilterWorkflow(t *testing.T) {
 	board.AddTask(task1)
 	board.AddTask(task2)
 	board.AddTask(task3)
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	app := NewApp(store)
 	app.state.SetBoard(board)

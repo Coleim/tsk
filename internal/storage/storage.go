@@ -109,7 +109,7 @@ func (s *Storage) SaveBoard(board *model.Board) error {
 
 	// Atomic rename
 	if err := os.Rename(tempPath, path); err != nil {
-		os.Remove(tempPath) // Clean up temp file
+		_ = os.Remove(tempPath) // Clean up temp file
 		return fmt.Errorf("failed to save board: %w", err)
 	}
 
@@ -238,7 +238,7 @@ func (s *Storage) BoardCount() (int, error) {
 // archivePath returns the archive file path for a board
 func (s *Storage) archivePath(boardID string) string {
 	archiveDir := filepath.Join(s.basePath, "data", "archive")
-	os.MkdirAll(archiveDir, 0755)
+	_ = os.MkdirAll(archiveDir, 0755) // Ignore error - will fail later if dir unavailable
 	return filepath.Join(archiveDir, fmt.Sprintf("%s.json", boardID))
 }
 
@@ -344,7 +344,7 @@ func (s *Storage) UnarchiveTask(taskID string, boardID string) error {
 	// Filter out the task
 	newTasks := make([]ArchivedTask, 0, len(archive.Tasks))
 	for _, t := range archive.Tasks {
-		if t.Task.ID != taskID {
+		if t.ID != taskID {
 			newTasks = append(newTasks, t)
 		}
 	}
@@ -369,7 +369,7 @@ func (s *Storage) UnarchiveTasks(taskIDs []string, boardID string) error {
 	// Filter out the tasks
 	newTasks := make([]ArchivedTask, 0, len(archive.Tasks))
 	for _, t := range archive.Tasks {
-		if !removeSet[t.Task.ID] {
+		if !removeSet[t.ID] {
 			newTasks = append(newTasks, t)
 		}
 	}

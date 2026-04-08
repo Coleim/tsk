@@ -191,3 +191,4 @@
 - [x] 16.6 Spec updated: Moving task between panes follows task and keeps it visible
 - [x] 16.7 Spec compliance: Archive commands (a/A) are now fully undoable - removes from archive file too
 - [x] 16.8 Vim-style navigation: G jumps to bottom, gg jumps to top of task list
+- [x] 16.9 CI fix: Added golangci-lint to CI workflow, fixed 35 lint issues, added pre-commit hooks

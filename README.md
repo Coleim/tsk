@@ -149,6 +149,44 @@ tsk works out of the box with sensible defaults. Data is auto-saved:
 - Every 5 seconds if there are unsaved changes
 - On quit or board switch
 
+## Development
+
+### Prerequisites
+
+- Go 1.21+
+- golangci-lint (`brew install golangci-lint`)
+
+### Building
+
+```bash
+make build    # Build binary to bin/tsk
+make run      # Build and run
+make test     # Run tests
+make lint     # Run linter
+make check    # Run lint + tests
+```
+
+### Pre-commit Hooks
+
+Install Git hooks to run lint and tests before each commit:
+
+```bash
+./scripts/install-hooks.sh
+```
+
+This ensures code quality checks pass locally before pushing to CI.
+
+### Makefile Targets
+
+| Target | Description |
+|--------|-------------|
+| `make build` | Build the binary |
+| `make test` | Run unit tests |
+| `make lint` | Run golangci-lint |
+| `make check` | Run lint + tests (pre-commit) |
+| `make bench` | Run benchmarks |
+| `make perf-test` | Run performance threshold tests |
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.

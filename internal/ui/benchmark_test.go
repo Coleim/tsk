@@ -36,11 +36,11 @@ func createLargeBoard(taskCount int) *model.Board {
 // BenchmarkBoardLoad measures time to load a large board
 func BenchmarkBoardLoad(b *testing.B) {
 	dir, _ := os.MkdirTemp("", "tsk-bench-*")
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	store, _ := storage.NewStorageWithPath(dir)
 	board := createLargeBoard(500)
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -54,7 +54,7 @@ func BenchmarkBoardLoad(b *testing.B) {
 // BenchmarkBoardSave measures time to save a large board
 func BenchmarkBoardSave(b *testing.B) {
 	dir, _ := os.MkdirTemp("", "tsk-bench-*")
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	store, _ := storage.NewStorageWithPath(dir)
 	board := createLargeBoard(500)
@@ -123,11 +123,11 @@ func BenchmarkFilter(b *testing.B) {
 // BenchmarkAppView measures View rendering performance
 func BenchmarkAppView(b *testing.B) {
 	dir, _ := os.MkdirTemp("", "tsk-bench-*")
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	store, _ := storage.NewStorageWithPath(dir)
 	board := createLargeBoard(500)
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	app := NewApp(store)
 	app.state.SetBoard(board)
@@ -143,11 +143,11 @@ func BenchmarkAppView(b *testing.B) {
 // BenchmarkKeyHandling measures key event handling
 func BenchmarkKeyHandling(b *testing.B) {
 	dir, _ := os.MkdirTemp("", "tsk-bench-*")
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	store, _ := storage.NewStorageWithPath(dir)
 	board := createLargeBoard(500)
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	app := NewApp(store)
 	app.state.SetBoard(board)
@@ -176,11 +176,11 @@ func TestPerformanceThresholds(t *testing.T) {
 	}
 
 	dir, _ := os.MkdirTemp("", "tsk-perf-*")
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	store, _ := storage.NewStorageWithPath(dir)
 	board := createLargeBoard(600)
-	store.SaveBoard(board)
+	_ = store.SaveBoard(board)
 
 	// Test 1: Board load time < 500ms
 	t.Run("BoardLoadUnder500ms", func(t *testing.T) {

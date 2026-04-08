@@ -1,4 +1,4 @@
-.PHONY: build run test clean install lint fmt bench bench-cpu bench-mem perf-test
+.PHONY: build run test clean install lint fmt bench bench-cpu bench-mem perf-test check pre-commit
 
 # Binary name
 BINARY=tsk
@@ -43,9 +43,15 @@ install:
 fmt:
 	$(GOFMT) ./...
 
-# Run linter
+# Run linter (requires golangci-lint: brew install golangci-lint)
 lint:
-	$(GOVET) ./...
+	golangci-lint run ./...
+
+# Pre-commit check (lint + test)
+check: lint test
+
+# Alias for pre-commit
+pre-commit: check
 
 # Download dependencies
 deps:

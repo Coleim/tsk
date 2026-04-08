@@ -220,7 +220,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch key {
 	case "q", "ctrl+c":
 		// Save before quit
-		a.save()
+		_ = a.save()
 		return tea.Quit
 
 	case "?":
@@ -341,14 +341,14 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 	case "b":
 		// Switch board
-		a.save() // Save current board first
+		_ = a.save() // Save current board first
 		a.boardSelector = NewBoardSelector(a.storage, a.state.Board)
 		a.state.Mode = model.ModeBoard
 		return nil
 
 	case "B":
 		// Create new board
-		a.save() // Save current board first
+		_ = a.save() // Save current board first
 		a.boardSelector = NewBoardSelector(a.storage, a.state.Board)
 		a.state.Mode = model.ModeBoard
 		return a.boardSelector.SetMode(BoardModeCreate)
@@ -491,15 +491,6 @@ func (a *App) handleTextInputMode(msg tea.KeyMsg) tea.Cmd {
 	}
 
 	return cmd
-}
-
-func (a *App) setPriority(p model.Priority) {
-	task := a.state.SelectedTask()
-	if task != nil {
-		task.SetPriority(p)
-		a.state.MarkDirty()
-		a.state.SetStatusMessage(fmt.Sprintf("Priority: %s", p))
-	}
 }
 
 func (a *App) setPriorityWithUndo(p model.Priority) {
@@ -1020,7 +1011,7 @@ func (a *App) switchToSelectedBoard() tea.Cmd {
 	}
 
 	// Save current board
-	a.save()
+	_ = a.save()
 
 	// Load the new board
 	board, err := a.storage.LoadBoard(selected.ID)
@@ -1389,9 +1380,10 @@ func (a *App) renderStatusBar() string {
 	}
 
 	// Add mode indicator
-	if a.state.Mode == model.ModeInsert {
+	switch a.state.Mode {
+	case model.ModeInsert:
 		line1 = styles.ModeInsertStyle.Render("-- INSERT --") + "  " + line1
-	} else if a.state.Mode == model.ModeSearch {
+	case model.ModeSearch:
 		line1 = styles.ModeSearchStyle.Render("-- SEARCH --") + "  " + line1
 	}
 
@@ -1484,10 +1476,11 @@ func (a *App) renderWelcomeScreen() string {
 
 	modal := styles.ModalStyle.Width(modalWidth).Render(content)
 
-	// Add vertical padding
+	// Add vertical and horizontal padding
 	vertPad := strings.Repeat("\n", paddingY)
+	horizPad := strings.Repeat(" ", paddingX)
 
-	return vertPad + modal
+	return vertPad + horizPad + modal
 }
 
 // truncateString truncates a string to maxLen characters, adding "..." if truncated

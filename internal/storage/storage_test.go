@@ -16,7 +16,7 @@ func createTestDir(t *testing.T) (string, func()) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	return dir, func() { os.RemoveAll(dir) }
+	return dir, func() { _ = os.RemoveAll(dir) }
 }
 
 // ============ Storage Creation Tests (14.6) ============
@@ -132,12 +132,12 @@ func TestListBoards(t *testing.T) {
 	// Create some boards
 	board1 := model.NewBoard("board-1", "First Board")
 	board1.AddTask(model.NewTask("task-1", "Task 1", model.StatusToDo))
-	storage.SaveBoard(board1)
+	_ = storage.SaveBoard(board1)
 
 	board2 := model.NewBoard("board-2", "Second Board")
 	board2.AddTask(model.NewTask("task-2", "Task 2", model.StatusToDo))
 	board2.AddTask(model.NewTask("task-3", "Task 3", model.StatusInProgress))
-	storage.SaveBoard(board2)
+	_ = storage.SaveBoard(board2)
 
 	boards, err = storage.ListBoards()
 	if err != nil {
@@ -183,10 +183,10 @@ func TestMostRecentBoard(t *testing.T) {
 
 	// Create boards
 	board1 := model.NewBoard("board-1", "First Board")
-	storage.SaveBoard(board1)
+	_ = storage.SaveBoard(board1)
 
 	board2 := model.NewBoard("board-2", "Second Board")
-	storage.SaveBoard(board2) // This is saved later, so it's more recent
+	_ = storage.SaveBoard(board2) // This is saved later, so it's more recent
 
 	recent, err := storage.MostRecentBoard()
 	if err != nil {
@@ -207,7 +207,7 @@ func TestLoadCorruptBoard(t *testing.T) {
 
 	// Write corrupt JSON
 	corruptPath := filepath.Join(dir, "data", "boards", "board-corrupt.json")
-	os.WriteFile(corruptPath, []byte("{ invalid json"), 0644)
+	_ = os.WriteFile(corruptPath, []byte("{ invalid json"), 0644)
 
 	_, err := storage.LoadBoard("corrupt")
 	if err == nil {
@@ -222,7 +222,7 @@ func TestAtomicWrite(t *testing.T) {
 	storage, _ := NewStorageWithPath(dir)
 
 	board := model.NewBoard("test", "Test Board")
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	// Verify no temp files remain after save
 	entries, _ := os.ReadDir(filepath.Join(dir, "data", "boards"))
@@ -243,7 +243,7 @@ func TestBackupBoard(t *testing.T) {
 
 	board := model.NewBoard("test", "Test Board")
 	board.AddTask(model.NewTask("task-1", "Task 1", model.StatusToDo))
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	// Create backup
 	err := storage.BackupBoard("test")
@@ -276,7 +276,7 @@ func TestDeleteBoardCreatesBackup(t *testing.T) {
 	storage, _ := NewStorageWithPath(dir)
 
 	board := model.NewBoard("test", "Test Board")
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	// Delete board (should backup first)
 	err := storage.DeleteBoard("test")
@@ -308,7 +308,7 @@ func TestArchiveTask(t *testing.T) {
 	board := model.NewBoard("test", "Test Board")
 	task := model.NewTask("task-1", "Task 1", model.StatusDone)
 	board.AddTask(task)
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	// Archive the task
 	err := storage.ArchiveTask(task, board)
@@ -326,7 +326,7 @@ func TestArchiveTask(t *testing.T) {
 		t.Errorf("Expected 1 archived task, got %d", len(archive.Tasks))
 	}
 
-	if archive.Tasks[0].Task.ID != task.ID {
+	if archive.Tasks[0].ID != task.ID {
 		t.Error("Archived task ID mismatch")
 	}
 	if archive.Tasks[0].BoardID != board.ID {
@@ -348,7 +348,7 @@ func TestArchiveMultipleTasks(t *testing.T) {
 	task2 := model.NewTask("task-2", "Task 2", model.StatusDone)
 	board.AddTask(task1)
 	board.AddTask(task2)
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	// Archive both tasks
 	err := storage.ArchiveTasks([]*model.Task{task1, task2}, board)
@@ -426,7 +426,7 @@ func TestImportBoard(t *testing.T) {
 
 	data, _ := json.MarshalIndent(exportBoard, "", "  ")
 	importPath := filepath.Join(dir, "import.json")
-	os.WriteFile(importPath, data, 0644)
+	_ = os.WriteFile(importPath, data, 0644)
 
 	// Import it
 	imported, err := storage.ImportBoard(importPath)
@@ -472,7 +472,7 @@ func TestImportBoardInvalidFile(t *testing.T) {
 
 	// Invalid JSON
 	invalidPath := filepath.Join(dir, "invalid.json")
-	os.WriteFile(invalidPath, []byte("not json"), 0644)
+	_ = os.WriteFile(invalidPath, []byte("not json"), 0644)
 
 	_, err = storage.ImportBoard(invalidPath)
 	if err == nil {
@@ -506,7 +506,7 @@ func TestHasBoards(t *testing.T) {
 	}
 
 	board := model.NewBoard("test", "Test")
-	storage.SaveBoard(board)
+	_ = storage.SaveBoard(board)
 
 	has, _ = storage.HasBoards()
 	if !has {
@@ -525,8 +525,8 @@ func TestBoardCount(t *testing.T) {
 		t.Errorf("Expected 0, got %d", count)
 	}
 
-	storage.SaveBoard(model.NewBoard("b1", "Board 1"))
-	storage.SaveBoard(model.NewBoard("b2", "Board 2"))
+	_ = storage.SaveBoard(model.NewBoard("b1", "Board 1"))
+	_ = storage.SaveBoard(model.NewBoard("b2", "Board 2"))
 
 	count, _ = storage.BoardCount()
 	if count != 2 {

@@ -1,0 +1,33 @@
+#!/bin/bash
+# Pre-commit hook that runs lint and tests before allowing commit
+# Install with: scripts/install-hooks.sh
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# Check if golangci-lint is installed
+if ! command -v golangci-lint &> /dev/null; then
+    echo "ERROR: golangci-lint is not installed."
+    echo "Install it with: brew install golangci-lint"
+    exit 1
+fi
+
+# Run lint
+echo "→ Running linter..."
+if ! golangci-lint run ./...; then
+    echo "✗ Lint failed. Please fix the issues before committing."
+    exit 1
+fi
+echo "✓ Lint passed"
+
+# Run tests
+echo "→ Running tests..."
+if ! go test ./... > /dev/null 2>&1; then
+    echo "✗ Tests failed. Please fix the issues before committing."
+    go test ./...  # Show the actual error
+    exit 1
+fi
+echo "✓ Tests passed"
+
+echo "✓ All pre-commit checks passed!"

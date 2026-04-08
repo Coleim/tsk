@@ -30,13 +30,13 @@ func TestManagerDefaultMaxSize(t *testing.T) {
 	// Add more than 20 commands
 	for i := 0; i < 25; i++ {
 		cmd := NewCreateTaskCommand("task-"+string(rune('0'+i)), "Task", model.StatusToDo)
-		m.Execute(board, cmd)
+		_ = m.Execute(board, cmd)
 	}
 
 	// Should have capped at 20
 	count := 0
 	for m.CanUndo() {
-		m.Undo(board)
+		_, _ = m.Undo(board)
 		count++
 	}
 	if count > 20 {
@@ -84,8 +84,8 @@ func TestRedo(t *testing.T) {
 	board := model.NewBoard("test", "Test Board")
 
 	cmd := NewCreateTaskCommand("task-1", "Test Task", model.StatusToDo)
-	m.Execute(board, cmd)
-	m.Undo(board)
+	_ = m.Execute(board, cmd)
+	_, _ = m.Undo(board)
 
 	if !m.CanRedo() {
 		t.Error("Should be able to redo after undo")
@@ -115,8 +115,8 @@ func TestNewActionClearsRedoStack(t *testing.T) {
 
 	// Create and undo a task
 	cmd1 := NewCreateTaskCommand("task-1", "Task 1", model.StatusToDo)
-	m.Execute(board, cmd1)
-	m.Undo(board)
+	_ = m.Execute(board, cmd1)
+	_, _ = m.Undo(board)
 
 	// Now can redo
 	if !m.CanRedo() {
@@ -125,7 +125,7 @@ func TestNewActionClearsRedoStack(t *testing.T) {
 
 	// Execute new command
 	cmd2 := NewCreateTaskCommand("task-2", "Task 2", model.StatusToDo)
-	m.Execute(board, cmd2)
+	_ = m.Execute(board, cmd2)
 
 	// Redo should be cleared
 	if m.CanRedo() {
@@ -391,27 +391,27 @@ func TestMultipleUndoRedo(t *testing.T) {
 	board := model.NewBoard("test", "Test Board")
 
 	// Execute multiple commands
-	m.Execute(board, NewCreateTaskCommand("task-1", "Task 1", model.StatusToDo))
-	m.Execute(board, NewCreateTaskCommand("task-2", "Task 2", model.StatusToDo))
-	m.Execute(board, NewCreateTaskCommand("task-3", "Task 3", model.StatusToDo))
+	_ = m.Execute(board, NewCreateTaskCommand("task-1", "Task 1", model.StatusToDo))
+	_ = m.Execute(board, NewCreateTaskCommand("task-2", "Task 2", model.StatusToDo))
+	_ = m.Execute(board, NewCreateTaskCommand("task-3", "Task 3", model.StatusToDo))
 
 	if board.TotalTaskCount() != 3 {
 		t.Errorf("Expected 3 tasks, got %d", board.TotalTaskCount())
 	}
 
 	// Undo all
-	m.Undo(board)
-	m.Undo(board)
-	m.Undo(board)
+	_, _ = m.Undo(board)
+	_, _ = m.Undo(board)
+	_, _ = m.Undo(board)
 
 	if board.TotalTaskCount() != 0 {
 		t.Errorf("Expected 0 tasks after undo all, got %d", board.TotalTaskCount())
 	}
 
 	// Redo all
-	m.Redo(board)
-	m.Redo(board)
-	m.Redo(board)
+	_, _ = m.Redo(board)
+	_, _ = m.Redo(board)
+	_, _ = m.Redo(board)
 
 	if board.TotalTaskCount() != 3 {
 		t.Errorf("Expected 3 tasks after redo all, got %d", board.TotalTaskCount())
