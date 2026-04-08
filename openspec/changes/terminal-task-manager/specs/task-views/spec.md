@@ -39,11 +39,12 @@ The application SHALL display a preview panel showing details of the currently s
 
 #### Scenario: Split layout
 - **WHEN** user is on the main board view
-- **THEN** the screen is split 50/50 with task list on the left and preview on the right
+- **THEN** the screen is split 30/70 with task list on the left and preview on the right
+- **AND** both panels have the same height
 
 #### Scenario: Responsive sizing
 - **WHEN** terminal is resized
-- **THEN** both panels maintain 50% width proportionally
+- **THEN** both panels maintain 30%/70% width proportionally
 
 #### Scenario: Preview updates on navigation
 - **WHEN** user navigates to a different task with j/k

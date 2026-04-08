@@ -41,8 +41,8 @@ The UI adapts to terminal size changes:
 | Terminal width | Adaptation |
 |----------------|------------|
 | < 80 cols | Hide preview panel, full-width task list |
-| 80-120 cols | 60/40 split (task list / preview) |
-| > 120 cols | 66/33 split (task list / preview) |
+| 80-120 cols | 30/70 split (task list / preview) |
+| > 120 cols | 30/70 split (task list / preview) |
 
 | Terminal height | Adaptation |
 |-----------------|------------|
@@ -116,6 +116,24 @@ func (a *App) View() string {
 - Tabs show all panes with counts, clear mental model
 - `h/l` to switch panes feels like navigating vim buffers
 - Two-line status bar keeps shortcuts always visible
+- Task list and preview panel have equal height for visual balance
+
+## Loading State
+
+**Decision**: Show an animated spinner while loading board data.
+
+```
+┌─────────────────────────┐
+│                         │
+│   ⣾ Loading tasks...    │
+│                         │
+└─────────────────────────┘
+```
+
+- Uses `bubbles/spinner` component with Dot style
+- Centered both horizontally and vertically
+- Displayed during initial board load
+- Transitions to main UI once data is ready
 
 ---
 

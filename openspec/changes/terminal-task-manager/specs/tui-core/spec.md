@@ -5,7 +5,8 @@ The application SHALL render a full-screen terminal user interface using the Bub
 
 #### Scenario: Application startup
 - **WHEN** user runs the application command
-- **THEN** a full-screen TUI appears with the single-pane board view and preview panel
+- **THEN** a loading indicator with animated spinner appears while loading tasks
+- **AND THEN** a full-screen TUI appears with the single-pane board view and preview panel
 
 #### Scenario: Terminal resize handling
 - **WHEN** user resizes the terminal window
@@ -24,7 +25,8 @@ The application SHALL display a two-panel layout: task list (left) and preview (
 
 #### Scenario: Panel proportions
 - **WHEN** displaying the layout
-- **THEN** task list takes approximately 60% width, preview takes 40%
+- **THEN** task list takes approximately 30% width, preview takes 70%
+- **AND** both panels have the same height
 
 ### Requirement: Application displays pane tabs
 The application SHALL display tabs showing all panes with the current pane highlighted.
@@ -87,3 +89,11 @@ The application SHALL display user-friendly error messages when operations fail.
 #### Scenario: Error notification
 - **WHEN** an operation fails (e.g., save error)
 - **THEN** an error message appears in status bar line 1 with details
+
+### Requirement: Application shows loading state
+The application SHALL display a loading indicator while loading board data.
+
+#### Scenario: Loading indicator on startup
+- **WHEN** application is loading board data
+- **THEN** an animated spinner with "Loading tasks..." text is displayed
+- **AND** the spinner is centered on the screen

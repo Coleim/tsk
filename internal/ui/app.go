@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,6 +20,10 @@ import (
 type (
 	tickMsg        time.Time
 	statusClearMsg struct{}
+	boardLoadedMsg struct {
+		board *model.Board
+		err   error
+	}
 )
 
 // App is the main application model
@@ -56,6 +61,10 @@ type App struct {
 	// Auto-save ticker
 	lastAutoSave time.Time
 
+	// Loading state
+	loading bool
+	spinner spinner.Model
+
 	// Error state
 	err error
 
@@ -69,18 +78,26 @@ func NewApp(store *storage.Storage) *App {
 	ti.Placeholder = "Enter text..."
 	ti.CharLimit = 256
 
+	// Create spinner with dots style
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(styles.ColorAccent)
+
 	return &App{
 		state:        model.NewAppState(),
 		storage:      store,
 		textInput:    ti,
 		undoManager:  undo.NewManager(20),
 		lastAutoSave: time.Now(),
+		loading:      true,
+		spinner:      s,
 	}
 }
 
 // Init initializes the application
 func (a *App) Init() tea.Cmd {
 	return tea.Batch(
+		a.spinner.Tick,
 		a.loadInitialBoard(),
 		a.tickCmd(),
 	)
@@ -90,25 +107,20 @@ func (a *App) loadInitialBoard() tea.Cmd {
 	return func() tea.Msg {
 		hasBoards, err := a.storage.HasBoards()
 		if err != nil {
-			return err
+			return boardLoadedMsg{err: err}
 		}
 
 		if !hasBoards {
 			// First run - show welcome screen
-			a.state.Mode = model.ModeWelcome
-			a.textInput.SetValue("")
-			a.textInput.Placeholder = "My Tasks"
-			a.textInput.Focus()
-			return nil
+			return boardLoadedMsg{board: nil}
 		}
 
 		// Load most recent board
 		board, err := a.storage.MostRecentBoard()
 		if err != nil {
-			return err
+			return boardLoadedMsg{err: err}
 		}
-		a.state.SetBoard(board)
-		return nil
+		return boardLoadedMsg{board: board}
 	}
 }
 
@@ -125,8 +137,32 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case error:
 		a.err = msg
+		a.loading = false
 		a.state.SetStatusMessage(fmt.Sprintf("Error: %v", msg))
 		return a, nil
+
+	case boardLoadedMsg:
+		a.loading = false
+		if msg.err != nil {
+			a.err = msg.err
+			a.state.SetStatusMessage(fmt.Sprintf("Error: %v", msg.err))
+			return a, nil
+		}
+		if msg.board == nil {
+			// First run - show welcome screen
+			a.state.Mode = model.ModeWelcome
+			a.textInput.SetValue("")
+			a.textInput.Placeholder = "My Tasks"
+			a.textInput.Focus()
+		} else {
+			a.state.SetBoard(msg.board)
+		}
+		return a, nil
+
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		a.spinner, cmd = a.spinner.Update(msg)
+		return a, cmd
 
 	case tea.KeyMsg:
 		cmd := a.handleKeyMsg(msg)
@@ -1098,7 +1134,12 @@ func (a *App) save() error {
 // View renders the application
 func (a *App) View() string {
 	if a.state.Width == 0 {
-		return "Loading..."
+		return ""
+	}
+
+	// Loading state with spinner
+	if a.loading {
+		return a.renderLoadingScreen()
 	}
 
 	// Welcome screen for first run
@@ -1328,7 +1369,7 @@ func (a *App) renderTaskList(width, height int) string {
 func (a *App) renderPreview(width, height int) string {
 	task := a.state.SelectedTask()
 	if task == nil {
-		return styles.PreviewStyle.Width(width - 2).Render(styles.HelpHintStyle.Render("Select a task to preview"))
+		return styles.PreviewStyle.Width(width - 2).Height(height - 2).Render(styles.HelpHintStyle.Render("Select a task to preview"))
 	}
 
 	var lines []string
@@ -1353,7 +1394,7 @@ func (a *App) renderPreview(width, height int) string {
 	}
 
 	content := strings.Join(lines, "\n")
-	return styles.PreviewStyle.Width(width - 2).Render(content)
+	return styles.PreviewStyle.Width(width - 2).Height(height - 2).Render(content)
 }
 
 func (a *App) renderStatusBar() string {
@@ -1442,6 +1483,36 @@ func (a *App) renderWithTextInput(base string) string {
 		styles.HelpHintStyle.Render("Enter to confirm, Esc to cancel")
 
 	return styles.ModalStyle.Render(modal)
+}
+
+func (a *App) renderLoadingScreen() string {
+	// Center the loading indicator
+	loadingText := a.spinner.View() + " Loading tasks..."
+
+	// Create a nicely styled loading box
+	loadingBox := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(styles.ColorBorder).
+		Padding(2, 4).
+		Render(loadingText)
+
+	// Center horizontally and vertically
+	boxWidth := lipgloss.Width(loadingBox)
+	boxHeight := lipgloss.Height(loadingBox)
+
+	paddingX := (a.state.Width - boxWidth) / 2
+	paddingY := (a.state.Height - boxHeight) / 2
+	if paddingX < 0 {
+		paddingX = 0
+	}
+	if paddingY < 0 {
+		paddingY = 0
+	}
+
+	vertPad := strings.Repeat("\n", paddingY)
+	horizPad := strings.Repeat(" ", paddingX)
+
+	return vertPad + horizPad + loadingBox
 }
 
 func (a *App) renderWelcomeScreen() string {

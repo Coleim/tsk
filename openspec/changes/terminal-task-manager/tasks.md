@@ -192,3 +192,5 @@
 - [x] 16.7 Spec compliance: Archive commands (a/A) are now fully undoable - removes from archive file too
 - [x] 16.8 Vim-style navigation: G jumps to bottom, gg jumps to top of task list
 - [x] 16.9 CI fix: Added golangci-lint to CI workflow, fixed 35 lint issues, added pre-commit hooks
+- [x] 16.10 UX: Added animated spinner during board loading using bubbles/spinner
+- [x] 16.11 Layout: Right panel (preview) now takes full height matching task list
