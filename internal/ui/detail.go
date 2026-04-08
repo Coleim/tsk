@@ -10,13 +10,15 @@ import (
 
 // TaskDetail represents the task detail view state
 type TaskDetail struct {
-	Task *model.Task
+	Task  *model.Task
+	Board *model.Board
 }
 
 // NewTaskDetail creates a new task detail view
-func NewTaskDetail(task *model.Task) *TaskDetail {
+func NewTaskDetail(task *model.Task, board *model.Board) *TaskDetail {
 	return &TaskDetail{
-		Task: task,
+		Task:  task,
+		Board: board,
 	}
 }
 
@@ -56,10 +58,13 @@ func (td *TaskDetail) View(width, height int) string {
 	}
 
 	// Labels
-	if len(td.Task.Labels) > 0 {
-		labelsStr := strings.Join(td.Task.Labels, ", ")
-		labelsLine := styles.PreviewLabelStyle.Render("Labels:    ") +
-			styles.LabelStyle.Render(labelsStr)
+	if len(td.Task.Labels) > 0 && td.Board != nil {
+		var labelBadges []string
+		for _, labelName := range td.Task.Labels {
+			label := td.Board.GetLabel(labelName)
+			labelBadges = append(labelBadges, styles.LabelBadge(label.Name, label.Color))
+		}
+		labelsLine := styles.PreviewLabelStyle.Render("Labels:    ") + strings.Join(labelBadges, " ")
 		lines = append(lines, labelsLine)
 	}
 
@@ -95,25 +100,15 @@ func (td *TaskDetail) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	// Create modal box
-	modalWidth := width - 10
-	if modalWidth < 40 {
-		modalWidth = 40
-	}
-	if modalWidth > 80 {
-		modalWidth = 80
+	// Full-screen layout
+	editWidth := width - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(modalWidth).Render(content)
+	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
-	// Center vertically
-	boxHeight := strings.Count(box, "\n") + 1
-	paddingY := (height - boxHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
-	}
-
-	return strings.Repeat("\n", paddingY) + box
+	return box
 }
 
 // wordWrap wraps text to the specified width

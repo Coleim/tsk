@@ -144,7 +144,7 @@ func (bs *BoardSelector) Refresh() {
 	}
 }
 
-// View renders the board selector
+// View renders the board selector (full screen)
 func (bs *BoardSelector) View(width, height int) string {
 	var lines []string
 
@@ -214,18 +214,13 @@ func (bs *BoardSelector) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	modalWidth := 55
-	if modalWidth > width-10 {
-		modalWidth = width - 10
+	// Full-screen layout
+	editWidth := width - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(modalWidth).Render(content)
+	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
-	boxHeight := strings.Count(box, "\n") + 1
-	paddingY := (height - boxHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
-	}
-
-	return strings.Repeat("\n", paddingY) + box
+	return box
 }

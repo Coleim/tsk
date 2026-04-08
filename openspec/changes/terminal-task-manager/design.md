@@ -99,14 +99,25 @@ Active tabs display in their status color; inactive tabs are gray.
 
 ### Labels in Task Edit Modal
 
-The task edit modal (`Enter` on a task) now includes a labels field alongside title and description. Labels can be entered as comma-separated values.
+The task edit modal (`Enter` on a task) includes a labels field alongside title and description. Labels can be entered manually as comma-separated values, or selected from a popup.
 
 **Field order**:
 1. Title (required)
 2. Description (optional)
-3. Labels (comma-separated, optional)
+3. Labels (optional)
 
 Navigate between fields with `Tab` / `Shift+Tab`.
+
+**Label popup behavior**:
+- When focus is on the Labels field, pressing `Tab` opens a small popup listing all board labels
+- Navigate through labels with `Tab`
+- Select highlighted label with `Enter` (appends to current labels)
+- Close popup with `Escape`
+
+**Label storage**:
+- Labels are stored at the board level in `BoardLabels` map
+- Each label has a name and auto-assigned color
+- Labels persist with board data and can be versioned
 
 ## Risks / Trade-offs
 

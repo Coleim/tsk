@@ -3,7 +3,6 @@ package ui
 import (
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/coliva/tsk/internal/styles"
 )
 
@@ -98,7 +97,7 @@ func (m *Modal) Select() {
 	}
 }
 
-// View renders the modal
+// View renders the modal (full screen)
 func (m *Modal) View(screenWidth, screenHeight int) string {
 	var content strings.Builder
 
@@ -129,32 +128,13 @@ func (m *Modal) View(screenWidth, screenHeight int) string {
 		content.WriteString(styles.HelpHintStyle.Render("j/k to navigate, Enter to select, Esc to cancel"))
 	}
 
-	// Create styled modal box
-	modalBox := styles.ModalStyle.Width(m.Width).Render(content.String())
-
-	// Calculate padding to center the modal
-	modalHeight := strings.Count(modalBox, "\n") + 1
-	paddingY := (screenHeight - modalHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
+	// Full-screen layout
+	editWidth := screenWidth - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	modalWidth := lipgloss.Width(modalBox)
-	paddingX := (screenWidth - modalWidth) / 2
-	if paddingX < 0 {
-		paddingX = 0
-	}
+	modalBox := styles.ModalStyle.Width(editWidth).Height(screenHeight - 4).Render(content.String())
 
-	// Create dimmed overlay background
-	overlay := strings.Repeat("\n", paddingY)
-
-	// Indent modal horizontally
-	lines := strings.Split(modalBox, "\n")
-	indent := strings.Repeat(" ", paddingX)
-	for i, line := range lines {
-		lines[i] = indent + line
-	}
-	modalBox = strings.Join(lines, "\n")
-
-	return overlay + modalBox
+	return modalBox
 }

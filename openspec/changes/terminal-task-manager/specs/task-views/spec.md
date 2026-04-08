@@ -67,6 +67,10 @@ The edit view uses the full terminal width and height for maximum editing space.
 - **THEN** a full-screen detail view opens for editing all task properties
 - **AND** the view fills the entire terminal, not a centered modal
 
+#### Scenario: Detail view shows colored labels
+- **WHEN** task has labels in the detail view
+- **THEN** labels appear as colored badges with their assigned colors
+
 #### Scenario: Close detail view
 - **WHEN** user presses Escape in detail view
 - **THEN** view returns to the single-pane board view

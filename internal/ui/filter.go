@@ -269,23 +269,13 @@ func (f *Filter) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	// Create modal box
-	modalWidth := width - 20
-	if modalWidth < 50 {
-		modalWidth = 50
-	}
-	if modalWidth > 70 {
-		modalWidth = 70
+	// Full-screen layout
+	editWidth := width - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(modalWidth).Render(content)
+	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
-	// Center vertically
-	boxHeight := strings.Count(box, "\n") + 1
-	paddingY := (height - boxHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
-	}
-
-	return strings.Repeat("\n", paddingY) + box
+	return box
 }

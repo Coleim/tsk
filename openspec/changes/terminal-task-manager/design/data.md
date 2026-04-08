@@ -50,11 +50,17 @@ type LabelColor string // One of: red, orange, yellow, green, blue, purple, pink
 
 ## Labels
 
-Labels are stored at the board level for reusability across tasks. Each label has a name and a color, assigned automatically from a predefined palette when created. This ensures consistent coloring when the same label appears on multiple tasks.
+Labels are stored at the board level for reusability across tasks. Each label has a name and a color, assigned automatically from a predefined palette when created. This ensures consistent coloring when the same label appears on multiple tasks and allows labels to be versioned with the board data.
 
 **Available colors**: red, orange, yellow, green, blue, purple, pink, cyan
 
 When a new label is added to a task, it is automatically created at the board level with the next available color (cycling through the palette).
+
+**Label entry in edit view**:
+- Labels can be entered manually as comma-separated values
+- Pressing Tab opens a popup with all available board labels
+- Navigate labels with Tab, select with Enter
+- Labels are persisted at the board level for reuse
 
 **Use cases** - Useful for cross-cutting concerns:
 

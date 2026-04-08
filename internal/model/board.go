@@ -10,14 +10,14 @@ import (
 type LabelColor string
 
 const (
-	LabelColorRed     LabelColor = "red"
-	LabelColorOrange  LabelColor = "orange"
-	LabelColorYellow  LabelColor = "yellow"
-	LabelColorGreen   LabelColor = "green"
-	LabelColorBlue    LabelColor = "blue"
-	LabelColorPurple  LabelColor = "purple"
-	LabelColorPink    LabelColor = "pink"
-	LabelColorCyan    LabelColor = "cyan"
+	LabelColorRed    LabelColor = "red"
+	LabelColorOrange LabelColor = "orange"
+	LabelColorYellow LabelColor = "yellow"
+	LabelColorGreen  LabelColor = "green"
+	LabelColorBlue   LabelColor = "blue"
+	LabelColorPurple LabelColor = "purple"
+	LabelColorPink   LabelColor = "pink"
+	LabelColorCyan   LabelColor = "cyan"
 )
 
 // AllLabelColors returns all available label colors

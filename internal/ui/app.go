@@ -155,7 +155,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.textInput.Placeholder = "My Tasks"
 			a.textInput.Focus()
 		} else {
-			// Ensure all labels have colors assigned
+			// Ensure all labels have proper definitions
 			msg.board.EnsureLabelsExist()
 			a.state.SetBoard(msg.board)
 		}
@@ -300,7 +300,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		// Open task detail view
 		task := a.state.SelectedTask()
 		if task != nil {
-			a.taskDetail = NewTaskDetail(task)
+			a.taskDetail = NewTaskDetail(task, a.state.Board)
 			a.state.Mode = model.ModeDetail
 		}
 
@@ -308,7 +308,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		// Edit task
 		task := a.state.SelectedTask()
 		if task != nil {
-			a.taskEdit = NewTaskEdit(task)
+			a.taskEdit = NewTaskEdit(task, a.state.Board)
 			a.state.Mode = model.ModeEdit
 			return a.taskEdit.Focus()
 		}
@@ -363,7 +363,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		// Manage labels
 		task := a.state.SelectedTask()
 		if task != nil {
-			a.labelEditor = NewLabelEditor(task)
+			a.labelEditor = NewLabelEditor(task, a.state.Board)
 			a.state.Mode = model.ModeLabels
 			return a.labelEditor.Focus()
 		}
@@ -612,7 +612,7 @@ func (a *App) handleDetailMode(msg tea.KeyMsg) tea.Cmd {
 	case "enter", "e":
 		// Edit task from detail view
 		if a.taskDetail != nil && a.taskDetail.Task != nil {
-			a.taskEdit = NewTaskEdit(a.taskDetail.Task)
+			a.taskEdit = NewTaskEdit(a.taskDetail.Task, a.state.Board)
 			a.taskDetail = nil
 			a.state.Mode = model.ModeEdit
 			return a.taskEdit.Focus()
@@ -629,7 +629,7 @@ func (a *App) handleDetailMode(msg tea.KeyMsg) tea.Cmd {
 	case "L":
 		// Manage labels from detail view
 		if a.taskDetail != nil && a.taskDetail.Task != nil {
-			a.labelEditor = NewLabelEditor(a.taskDetail.Task)
+			a.labelEditor = NewLabelEditor(a.taskDetail.Task, a.state.Board)
 			a.taskDetail = nil
 			a.state.Mode = model.ModeLabels
 			return a.labelEditor.Focus()
@@ -668,7 +668,11 @@ func (a *App) handleEditMode(msg tea.KeyMsg) tea.Cmd {
 		return nil
 
 	case "tab":
-		// Switch between fields
+		// If on labels field, cycle through labels; otherwise switch fields
+		if a.taskEdit.IsLabelsField() {
+			a.taskEdit.CycleLabel()
+			return nil
+		}
 		return a.taskEdit.NextField()
 
 	case "shift+tab":
@@ -1478,11 +1482,16 @@ func (a *App) renderHelpOverlay() string {
 ──────────────────────────────────────────────────────────────────────────────
                             Press ? or Esc to close                           
 `
-	return styles.ModalStyle.Render(help)
+	// Full-screen help
+	editWidth := a.state.Width - 4
+	if editWidth < 50 {
+		editWidth = 50
+	}
+	return styles.ModalStyle.Width(editWidth).Height(a.state.Height - 4).Render(help)
 }
 
 func (a *App) renderWithTextInput(base string) string {
-	// Create a modal with text input
+	// Create a full-screen dialog with text input
 	var title string
 	if a.state.Mode == model.ModeInsert {
 		title = "New Task"
@@ -1493,7 +1502,12 @@ func (a *App) renderWithTextInput(base string) string {
 	modal := styles.ModalTitleStyle.Render(title) + "\n\n" + a.textInput.View() + "\n\n" +
 		styles.HelpHintStyle.Render("Enter to confirm, Esc to cancel")
 
-	return styles.ModalStyle.Render(modal)
+	// Full-screen layout
+	editWidth := a.state.Width - 4
+	if editWidth < 50 {
+		editWidth = 50
+	}
+	return styles.ModalStyle.Width(editWidth).Height(a.state.Height - 4).Render(modal)
 }
 
 func (a *App) renderLoadingScreen() string {

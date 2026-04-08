@@ -42,11 +42,11 @@ The application SHALL support arrow keys as alternatives to vim keys.
 - **THEN** pane switching behaves the same as h/l
 
 ### Requirement: Enter key opens task detail
-The application SHALL use Enter to open task detail view for viewing and editing.
+The application SHALL use Enter to open a full-screen task detail view for viewing and editing.
 
 #### Scenario: Enter opens task
 - **WHEN** user presses Enter on a task
-- **THEN** the task detail view opens for viewing and editing
+- **THEN** a full-screen task detail view opens for viewing and editing
 
 ### Requirement: New task with n key
 The application SHALL create new tasks with the 'n' key.
@@ -104,7 +104,8 @@ The application SHALL manage labels with the 'L' key.
 
 #### Scenario: Open label manager
 - **WHEN** user presses 'L' on a selected task
-- **THEN** label management modal opens to add or remove labels
+- **THEN** a full-screen label management dialog opens to add or remove labels
+- **AND** existing labels are displayed with their assigned colors
 
 ### Requirement: Search with slash key
 The application SHALL activate search with the '/' key.
@@ -181,15 +182,15 @@ The application SHALL show help with the '?' key.
 
 #### Scenario: Show help
 - **WHEN** user presses '?'
-- **THEN** help overlay appears showing all keyboard shortcuts grouped by category
+- **THEN** a full-screen help dialog appears showing all keyboard shortcuts grouped by category
 
 #### Scenario: Close help with ?
-- **WHEN** help overlay is open and user presses '?'
-- **THEN** help overlay closes (toggle behavior)
+- **WHEN** help dialog is open and user presses '?'
+- **THEN** help dialog closes (toggle behavior)
 
 #### Scenario: Close help with Escape
-- **WHEN** help overlay is open and user presses Escape
-- **THEN** help overlay closes
+- **WHEN** help dialog is open and user presses Escape
+- **THEN** help dialog closes
 
 ### Requirement: Archive tasks with a/A keys
 The application SHALL allow archiving completed tasks when in DONE pane.

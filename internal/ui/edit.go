@@ -21,14 +21,16 @@ const (
 // TaskEdit represents the task editing state
 type TaskEdit struct {
 	Task        *model.Task
+	Board       *model.Board
 	titleInput  textinput.Model
 	descInput   textinput.Model
 	labelInput  textinput.Model
 	activeField EditField
+	labelIdx    int // Index for cycling through labels with Tab
 }
 
 // NewTaskEdit creates a new task editor
-func NewTaskEdit(task *model.Task) *TaskEdit {
+func NewTaskEdit(task *model.Task, board *model.Board) *TaskEdit {
 	titleInput := textinput.New()
 	titleInput.SetValue(task.Title)
 	titleInput.Placeholder = "Task title..."
@@ -42,15 +44,17 @@ func NewTaskEdit(task *model.Task) *TaskEdit {
 
 	labelInput := textinput.New()
 	labelInput.SetValue(strings.Join(task.Labels, ", "))
-	labelInput.Placeholder = "Labels (comma-separated)..."
+	labelInput.Placeholder = "Labels (Tab to autocomplete)..."
 	labelInput.CharLimit = 512
 
 	return &TaskEdit{
 		Task:        task,
+		Board:       board,
 		titleInput:  titleInput,
 		descInput:   descInput,
 		labelInput:  labelInput,
 		activeField: EditFieldTitle,
+		labelIdx:    -1,
 	}
 }
 
@@ -81,6 +85,35 @@ func (te *TaskEdit) Update(msg tea.Msg) tea.Cmd {
 	}
 
 	return cmd
+}
+
+// CycleLabel cycles through existing board labels when Tab is pressed on labels field
+func (te *TaskEdit) CycleLabel() {
+	if te.Board == nil {
+		return
+	}
+	labels := te.Board.AllLabels()
+	if len(labels) == 0 {
+		return
+	}
+	te.labelIdx = (te.labelIdx + 1) % len(labels)
+
+	// Get current labels and append the new one
+	current := te.labelInput.Value()
+	newLabel := labels[te.labelIdx]
+
+	if current == "" {
+		te.labelInput.SetValue(newLabel)
+	} else {
+		// Check if label already exists
+		existing := te.GetLabels()
+		for _, l := range existing {
+			if l == newLabel {
+				return // Already have this label
+			}
+		}
+		te.labelInput.SetValue(current + ", " + newLabel)
+	}
 }
 
 // NextField moves to the next field
@@ -183,15 +216,24 @@ func (te *TaskEdit) View(width, height int) string {
 		labelsLabel = "▶ Labels:"
 	}
 	lines = append(lines, styles.PreviewLabelStyle.Render(labelsLabel))
-	lines = append(lines, te.labelInput.View())
+	if te.activeField == EditFieldLabels {
+		lines = append(lines, te.labelInput.View())
+		lines = append(lines, styles.HelpHintStyle.Render("  (Tab to cycle through existing labels)"))
+	} else {
+		lines = append(lines, te.labelInput.View())
+	}
 	lines = append(lines, "")
 
 	// Help text
-	lines = append(lines, styles.HelpHintStyle.Render("Tab: switch field  Enter: save  Esc: cancel"))
+	if te.activeField == EditFieldLabels {
+		lines = append(lines, styles.HelpHintStyle.Render("Tab: cycle labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+	} else {
+		lines = append(lines, styles.HelpHintStyle.Render("Tab: next field  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+	}
 
 	content := strings.Join(lines, "\n")
 
-	// Full-screen layout with padding
+	// Full-screen layout
 	editWidth := width - 4
 	if editWidth < 50 {
 		editWidth = 50
@@ -199,12 +241,10 @@ func (te *TaskEdit) View(width, height int) string {
 
 	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
-	// Center vertically
-	boxHeight := strings.Count(box, "\n") + 1
-	paddingY := (height - boxHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
-	}
+	return box
+}
 
-	return strings.Repeat("\n", paddingY) + box
+// IsLabelsField returns true if the labels field is active
+func (te *TaskEdit) IsLabelsField() bool {
+	return te.activeField == EditFieldLabels
 }

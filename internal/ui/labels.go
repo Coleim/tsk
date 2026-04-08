@@ -12,6 +12,7 @@ import (
 // LabelEditor handles label management for a task
 type LabelEditor struct {
 	Task        *model.Task
+	Board       *model.Board
 	labels      []string
 	input       textinput.Model
 	selectedIdx int
@@ -19,7 +20,7 @@ type LabelEditor struct {
 }
 
 // NewLabelEditor creates a new label editor
-func NewLabelEditor(task *model.Task) *LabelEditor {
+func NewLabelEditor(task *model.Task, board *model.Board) *LabelEditor {
 	labels := make([]string, len(task.Labels))
 	copy(labels, task.Labels)
 
@@ -29,6 +30,7 @@ func NewLabelEditor(task *model.Task) *LabelEditor {
 
 	return &LabelEditor{
 		Task:        task,
+		Board:       board,
 		labels:      labels,
 		input:       input,
 		selectedIdx: -1, // -1 means input field is selected
@@ -138,7 +140,7 @@ func (le *LabelEditor) hasLabel(label string) bool {
 	return false
 }
 
-// View renders the label editor
+// View renders the label editor (full screen)
 func (le *LabelEditor) View(width, height int) string {
 	var lines []string
 
@@ -149,12 +151,19 @@ func (le *LabelEditor) View(width, height int) string {
 	if len(le.labels) == 0 {
 		lines = append(lines, styles.HelpHintStyle.Render("(No labels)"))
 	} else {
-		for i, label := range le.labels {
+		for i, labelName := range le.labels {
 			var line string
-			if i == le.selectedIdx {
-				line = styles.TaskSelectedStyle.Render(" ▶ " + label)
+			var labelDisplay string
+			if le.Board != nil {
+				label := le.Board.GetLabel(labelName)
+				labelDisplay = styles.LabelBadge(label.Name, label.Color)
 			} else {
-				line = styles.TaskNormalStyle.Render("   " + label)
+				labelDisplay = labelName
+			}
+			if i == le.selectedIdx {
+				line = styles.TaskSelectedStyle.Render(" ▶ ") + labelDisplay
+			} else {
+				line = "   " + labelDisplay
 			}
 			lines = append(lines, line)
 		}
@@ -179,18 +188,13 @@ func (le *LabelEditor) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	modalWidth := 50
-	if modalWidth > width-10 {
-		modalWidth = width - 10
+	// Full-screen layout
+	editWidth := width - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(modalWidth).Render(content)
+	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
-	boxHeight := strings.Count(box, "\n") + 1
-	paddingY := (height - boxHeight) / 2
-	if paddingY < 0 {
-		paddingY = 0
-	}
-
-	return strings.Repeat("\n", paddingY) + box
+	return box
 }
