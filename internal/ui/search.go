@@ -226,8 +226,8 @@ func (s *Search) View(width, height int) string {
 		lines = append(lines, "")
 
 		// Calculate available height for results
-		headerLines := 6 // title, empty, input, empty, count, empty
-		footerLines := 3 // empty, help, padding
+		headerLines := 6                                          // title, empty, input, empty, count, empty
+		footerLines := 3                                          // empty, help, padding
 		availableHeight := height - headerLines - footerLines - 4 // 4 for modal borders
 		if availableHeight < 5 {
 			availableHeight = 5

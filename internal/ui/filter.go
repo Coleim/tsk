@@ -18,10 +18,10 @@ const (
 
 // Filter handles task filtering functionality
 type Filter struct {
-	board          *model.Board
-	mode           FilterMode
-	priorityIdx    int
-	labelIdx       int
+	board              *model.Board
+	mode               FilterMode
+	priorityIdx        int
+	labelIdx           int
 	selectedPriorities map[model.Priority]bool
 	selectedLabels     map[string]bool
 	availableLabels    []string

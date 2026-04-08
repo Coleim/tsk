@@ -1,4 +1,4 @@
-.PHONY: build run test clean install lint fmt
+.PHONY: build run test clean install lint fmt bench bench-cpu bench-mem perf-test
 
 # Binary name
 BINARY=tsk
@@ -67,3 +67,23 @@ build-windows:
 
 # Default target
 all: fmt lint test build
+
+# Run benchmarks
+bench:
+	$(GOTEST) -bench=. -benchmem -run="^$$" ./internal/ui/...
+
+# Run benchmarks with CPU profiling
+bench-cpu:
+	$(GOTEST) -bench=. -benchmem -cpuprofile=cpu.prof -run="^$$" ./internal/ui/...
+
+# Run benchmarks with memory profiling
+bench-mem:
+	$(GOTEST) -bench=. -benchmem -memprofile=mem.prof -run="^$$" ./internal/ui/...
+
+# Run performance threshold tests
+perf-test:
+	$(GOTEST) -v -run "TestPerformanceThresholds" ./internal/ui/...
+
+# Generate performance test board
+perf-setup:
+	@./scripts/perf-test.sh

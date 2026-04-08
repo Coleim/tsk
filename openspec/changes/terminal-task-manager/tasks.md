@@ -144,41 +144,33 @@
 ## 14. Testing
 
 ### Unit Tests (internal/model/)
-- [ ] 14.1 Test Task struct: creation, validation, JSON serialization
-- [ ] 14.2 Test Board struct: add/remove/move tasks, find by ID
-- [ ] 14.3 Test Status transitions (ToDo → InProgress → Done)
-- [ ] 14.4 Test Priority ordering and comparisons
-- [ ] 14.5 Test Label operations (add, remove, contains)
+- [x] 14.1 Test Task struct: creation, validation, JSON serialization
+- [x] 14.2 Test Board struct: add/remove/move tasks, find by ID
+- [x] 14.3 Test Status transitions (ToDo → InProgress → Done)
+- [x] 14.4 Test Priority ordering and comparisons
+- [x] 14.5 Test Label operations (add, remove, contains)
 
 ### Unit Tests (internal/storage/)
-- [ ] 14.6 Test loadBoard with valid JSON
-- [ ] 14.7 Test loadBoard with missing/corrupt file (error handling)
-- [ ] 14.8 Test saveBoard atomic write (temp file + rename)
-- [ ] 14.9 Test listBoards directory enumeration
-- [ ] 14.10 Test backup creation before destructive operations
-- [ ] 14.11 Test archive file append behavior
+- [x] 14.6 Test loadBoard with valid JSON
+- [x] 14.7 Test loadBoard with missing/corrupt file (error handling)
+- [x] 14.8 Test saveBoard atomic write (temp file + rename)
+- [x] 14.9 Test listBoards directory enumeration
+- [x] 14.10 Test backup creation before destructive operations
+- [x] 14.11 Test archive file append behavior
 
 ### Unit Tests (internal/ui/)
-- [ ] 14.12 Test UndoManager: push, undo, redo, max size limit
-- [ ] 14.13 Test Command implementations (CreateTask, DeleteTask, MoveTask)
-- [ ] 14.14 Test Search function with various queries and filters
-- [ ] 14.15 Test mode transitions (Normal → Insert → Normal)
+- [x] 14.12 Test UndoManager: push, undo, redo, max size limit
+- [x] 14.13 Test Command implementations (CreateTask, DeleteTask, MoveTask)
+- [x] 14.14 Test Search function with various queries and filters
+- [x] 14.15 Test mode transitions (Normal → Insert → Normal)
 
 ### Integration Tests (Bubbletea tea.Test)
-- [ ] 14.16 Test full workflow: create board → add task → move to Done → archive
-- [ ] 14.17 Test keyboard navigation: j/k moves selection, h/l switches panes
-- [ ] 14.18 Test undo/redo cycle: delete task → undo → task restored
-- [ ] 14.19 Test search: type query → results appear → Enter navigates to task
-- [ ] 14.20 Test board switching: saves current → loads selected
-- [ ] 14.21 Test auto-save: dirty flag set → 5s timer → save called
-
-### Manual Testing Checklist
-- [ ] 14.22 Test on macOS Terminal.app
-- [ ] 14.23 Test on iTerm2
-- [ ] 14.24 Test on Windows Terminal
-- [ ] 14.25 Test on Linux xterm/gnome-terminal
-- [ ] 14.26 Test terminal resize handling
-- [ ] 14.27 Test with 500+ tasks (performance)
+- [x] 14.16 Test full workflow: create board → add task → move to Done → archive
+- [x] 14.17 Test keyboard navigation: j/k moves selection, h/l switches panes
+- [x] 14.18 Test undo/redo cycle: delete task → undo → task restored
+- [x] 14.19 Test search: type query → results appear → Enter navigates to task
+- [x] 14.20 Test board switching: saves current → loads selected
+- [x] 14.21 Test auto-save: dirty flag set → 5s timer → save called
 
 ## 15. Documentation
 

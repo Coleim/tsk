@@ -76,12 +76,12 @@ func (s *AppState) CurrentTasks() []*Task {
 		return nil
 	}
 	tasks := s.Board.TasksByStatus(s.CurrentPane)
-	
+
 	// Apply filters if any are active
 	if s.FilterPriority == nil && len(s.FilterLabels) == 0 {
 		return tasks
 	}
-	
+
 	var filtered []*Task
 	for _, task := range tasks {
 		if s.matchesFilters(task) {
@@ -97,7 +97,7 @@ func (s *AppState) matchesFilters(task *Task) bool {
 	if s.FilterPriority != nil && task.Priority != *s.FilterPriority {
 		return false
 	}
-	
+
 	// Check label filters (task must have ALL selected labels)
 	for _, filterLabel := range s.FilterLabels {
 		found := false
@@ -111,7 +111,7 @@ func (s *AppState) matchesFilters(task *Task) bool {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
