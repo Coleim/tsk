@@ -49,6 +49,9 @@ type AppState struct {
 	// Filters
 	FilterPriority *Priority
 	FilterLabels   []string
+
+	// Scroll offset for task list
+	ScrollOffset int
 }
 
 // NewAppState creates a new application state
@@ -67,6 +70,7 @@ func (s *AppState) SetBoard(board *Board) {
 	s.Board = board
 	s.CurrentPane = StatusToDo
 	s.SelectedIndex = 0
+	s.ScrollOffset = 0
 	s.ClearSearch()
 }
 
@@ -148,12 +152,14 @@ func (s *AppState) SelectPrev() {
 func (s *AppState) NextPane() {
 	s.CurrentPane = s.CurrentPane.Next()
 	s.SelectedIndex = 0
+	s.ScrollOffset = 0
 }
 
 // PrevPane switches to the previous pane
 func (s *AppState) PrevPane() {
 	s.CurrentPane = s.CurrentPane.Prev()
 	s.SelectedIndex = 0
+	s.ScrollOffset = 0
 }
 
 // SetStatusMessage sets a status bar message
@@ -213,6 +219,7 @@ func (s *AppState) ClampSelection() {
 func (s *AppState) SwitchToTaskInPane(pane Status, taskID string) {
 	s.CurrentPane = pane
 	s.SelectedIndex = 0
+	s.ScrollOffset = 0
 
 	if s.Board == nil {
 		return

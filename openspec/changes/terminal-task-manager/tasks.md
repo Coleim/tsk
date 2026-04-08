@@ -180,3 +180,12 @@
 - [x] 15.4 Document data storage location (~/.tsk/)
 - [x] 15.5 Add LICENSE file (MIT)
 - [x] 15.6 Add CHANGELOG.md
+
+## 16. Post-Implementation Fixes
+
+- [x] 16.1 Fix: "L" key in detail mode now opens label editor (was not handled)
+- [x] 16.2 Refine: Low priority color changed from green (●) to gray (●) for less visual prominence
+- [x] 16.3 Spec compliance: Delete task now shows confirmation modal (y/n) before deleting
+- [x] 16.4 Layout: Task list and preview panel now use 30/70 split with borders
+- [x] 16.5 Scrolling: Task list now scrolls to keep selected task visible with "↑ N more above / ↓ N more below" indicators
+- [x] 16.6 Spec updated: Moving task between panes follows task and keeps it visible

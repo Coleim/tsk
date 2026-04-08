@@ -88,7 +88,7 @@ func (p Priority) Symbol() string {
 	case PriorityMedium:
 		return "◐"
 	case PriorityLow:
-		return "○"
+		return "●"
 	default:
 		return " "
 	}

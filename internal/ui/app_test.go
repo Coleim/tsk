@@ -3,6 +3,7 @@ package ui
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -508,5 +509,100 @@ func TestExportPath(t *testing.T) {
 	// Should be sanitized
 	if filepath.Base(path) != "tsk-export-My-Board.json" {
 		t.Errorf("Expected sanitized filename, got %s", path)
+	}
+}
+
+// TestDetailModeLabelEditor tests pressing 'L' in detail mode opens label editor
+func TestDetailModeLabelEditor(t *testing.T) {
+	app, cleanup := createTestApp(t)
+	defer cleanup()
+
+	// Open task detail view with Enter
+	app.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	if app.state.Mode != model.ModeDetail {
+		t.Fatalf("Expected ModeDetail after Enter, got %v", app.state.Mode)
+	}
+
+	// Get task being viewed
+	if app.taskDetail == nil || app.taskDetail.Task == nil {
+		t.Fatal("Expected taskDetail to be set")
+	}
+	taskID := app.taskDetail.Task.ID
+
+	// Press 'L' to open label editor
+	app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'L'}})
+
+	if app.state.Mode != model.ModeLabels {
+		t.Errorf("Expected ModeLabels after 'L' in detail mode, got %v", app.state.Mode)
+	}
+
+	if app.labelEditor == nil {
+		t.Error("Expected labelEditor to be set after 'L'")
+	}
+
+	// Label editor should be for the same task
+	if app.labelEditor != nil && app.labelEditor.Task.ID != taskID {
+		t.Errorf("Expected label editor for task %s, got %s", taskID, app.labelEditor.Task.ID)
+	}
+}
+
+// TestDeleteConfirmation tests pressing 'd' shows confirmation modal
+func TestDeleteConfirmation(t *testing.T) {
+	app, cleanup := createTestApp(t)
+	defer cleanup()
+
+	initialCount := len(app.state.Board.Tasks)
+	taskTitle := app.state.CurrentTasks()[0].Title
+
+	// Press 'd' to delete - should show confirmation
+	app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'d'}})
+
+	if app.state.Mode != model.ModeModal {
+		t.Fatalf("Expected ModeModal after 'd', got %v", app.state.Mode)
+	}
+
+	if app.state.ActiveModal == nil {
+		t.Fatal("Expected ActiveModal to be set")
+	}
+
+	// Task should NOT be deleted yet
+	if len(app.state.Board.Tasks) != initialCount {
+		t.Error("Task should not be deleted before confirmation")
+	}
+
+	// Press 'n' to cancel
+	app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}})
+
+	if app.state.Mode != model.ModeNormal {
+		t.Errorf("Expected ModeNormal after cancel, got %v", app.state.Mode)
+	}
+
+	// Task should still exist
+	if len(app.state.Board.Tasks) != initialCount {
+		t.Error("Task should not be deleted after cancel")
+	}
+
+	// Press 'd' again and confirm with 'y'
+	app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'d'}})
+	app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'y'}})
+
+	if app.state.Mode != model.ModeNormal {
+		t.Errorf("Expected ModeNormal after confirm, got %v", app.state.Mode)
+	}
+
+	// Task should be deleted
+	if len(app.state.Board.Tasks) != initialCount-1 {
+		t.Errorf("Expected %d tasks after deletion, got %d", initialCount-1, len(app.state.Board.Tasks))
+	}
+
+	// Status message should indicate deletion
+	if app.state.StatusMessage == "" {
+		t.Error("Expected status message after deletion")
+	}
+
+	// Verify the deleted task's title was in the status message
+	if !strings.Contains(app.state.StatusMessage, taskTitle) {
+		t.Errorf("Expected status message to contain '%s', got '%s'", taskTitle, app.state.StatusMessage)
 	}
 }

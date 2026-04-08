@@ -23,7 +23,7 @@ HEADER
 
 # Generate 600 tasks (200 per status)
 task_count=0
-for status in 0 1 2; do  # ToDo=0, InProgress=1, Done=2
+for status in "todo" "in_progress" "done"; do
     for i in $(seq 1 200); do
         task_count=$((task_count + 1))
         priority=$((i % 4))  # 0-3 priority rotation
@@ -40,13 +40,12 @@ for status in 0 1 2; do  # ToDo=0, InProgress=1, Done=2
       "id": "task-$task_count",
       "title": "Task $task_count - Performance Test Item",
       "description": "This is a test task for performance testing. Task number $task_count with status $status.",
-      "status": $status,
+      "status": "$status",
       "priority": $priority,
       "labels": ["perf-test", "batch-$((i / 50 + 1))"],
-      "dueDate": null,
       "position": $i,
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-01T00:00:00Z"
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
     }$comma
 TASK
     done
@@ -55,8 +54,8 @@ done
 # Close the JSON
 cat >> "$BOARD_FILE" << 'FOOTER'
   ],
-  "createdAt": "2026-01-01T00:00:00Z",
-  "updatedAt": "2026-01-01T00:00:00Z"
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z"
 }
 FOOTER
 

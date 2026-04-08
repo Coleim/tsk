@@ -253,15 +253,10 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		}
 
 	case "d":
-		// Delete task with undo
+		// Delete task with confirmation
 		task := a.state.SelectedTask()
 		if task != nil {
-			cmd := undo.NewDeleteTaskCommand(task)
-			if err := a.undoManager.Execute(a.state.Board, cmd); err == nil {
-				a.state.ClampSelection()
-				a.state.MarkDirty()
-				a.state.SetStatusMessage(fmt.Sprintf("Deleted: %s (u to undo)", task.Title))
-			}
+			a.showDeleteConfirmation(task, false)
 		}
 
 	case ">":
@@ -541,6 +536,20 @@ func (a *App) closeModal() {
 	a.state.Mode = model.ModeNormal
 }
 
+func (a *App) showDeleteConfirmation(task *model.Task, fromDetail bool) {
+	title := truncateString(task.Title, 30)
+	modal := NewConfirmModal("Delete Task", fmt.Sprintf("Delete task '%s'?", title))
+	modal.OnConfirm = func() {
+		cmd := undo.NewDeleteTaskCommand(task)
+		if err := a.undoManager.Execute(a.state.Board, cmd); err == nil {
+			a.state.ClampSelection()
+			a.state.MarkDirty()
+			a.state.SetStatusMessage(fmt.Sprintf("Deleted: %s (u to undo)", task.Title))
+		}
+	}
+	a.showModal(modal)
+}
+
 func (a *App) handleDetailMode(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
 	case "esc", "q":
@@ -558,17 +567,20 @@ func (a *App) handleDetailMode(msg tea.KeyMsg) tea.Cmd {
 		}
 
 	case "d":
-		// Delete task from detail view
+		// Delete task from detail view with confirmation
 		if a.taskDetail != nil && a.taskDetail.Task != nil {
 			task := a.taskDetail.Task
-			cmd := undo.NewDeleteTaskCommand(task)
-			if err := a.undoManager.Execute(a.state.Board, cmd); err == nil {
-				a.state.ClampSelection()
-				a.state.MarkDirty()
-				a.state.SetStatusMessage(fmt.Sprintf("Deleted: %s", task.Title))
-			}
 			a.taskDetail = nil
-			a.state.Mode = model.ModeNormal
+			a.showDeleteConfirmation(task, true)
+		}
+
+	case "L":
+		// Manage labels from detail view
+		if a.taskDetail != nil && a.taskDetail.Task != nil {
+			a.labelEditor = NewLabelEditor(a.taskDetail.Task)
+			a.taskDetail = nil
+			a.state.Mode = model.ModeLabels
+			return a.labelEditor.Focus()
 		}
 
 	case "1":
@@ -1129,15 +1141,15 @@ func (a *App) View() string {
 		contentHeight = 1
 	}
 
-	// Two-panel layout: task list + preview
-	leftWidth := a.state.Width * 2 / 3
-	rightWidth := a.state.Width - leftWidth - 3
+	// Two-panel layout: task list (30%) + preview (70%)
+	leftWidth := a.state.Width * 30 / 100
+	rightWidth := a.state.Width - leftWidth
 
 	taskList := a.renderTaskList(leftWidth, contentHeight)
 	preview := a.renderPreview(rightWidth, contentHeight)
 
 	// Join panels horizontally
-	content := lipgloss.JoinHorizontal(lipgloss.Top, taskList, " │ ", preview)
+	content := lipgloss.JoinHorizontal(lipgloss.Top, taskList, preview)
 
 	// Pad content to fill available height
 	contentLines := strings.Count(content, "\n") + 1
@@ -1196,47 +1208,101 @@ func (a *App) renderTabs() string {
 
 func (a *App) renderTaskList(width, height int) string {
 	if a.state.Board == nil {
-		return "No board loaded"
+		return styles.TaskListStyle.Width(width - 2).Render("No board loaded")
 	}
 
 	tasks := a.state.CurrentTasks()
 	if len(tasks) == 0 {
-		return styles.HelpHintStyle.Render("No tasks - press 'n' to create one")
+		return styles.TaskListStyle.Width(width - 2).Render(styles.HelpHintStyle.Render("No tasks - press 'n' to create one"))
+	}
+
+	// Reserve 2 lines for scroll indicators (always present to avoid layout shift)
+	visibleHeight := height - 4
+	if visibleHeight < 1 {
+		visibleHeight = 1
+	}
+
+	// Adjust scroll offset only when selection goes outside viewport
+	if a.state.SelectedIndex < a.state.ScrollOffset {
+		// Selection above viewport - scroll up
+		a.state.ScrollOffset = a.state.SelectedIndex
+	} else if a.state.SelectedIndex >= a.state.ScrollOffset+visibleHeight {
+		// Selection below viewport - scroll down
+		a.state.ScrollOffset = a.state.SelectedIndex - visibleHeight + 1
+	}
+
+	// Clamp scroll offset
+	if a.state.ScrollOffset < 0 {
+		a.state.ScrollOffset = 0
+	}
+	maxOffset := len(tasks) - visibleHeight
+	if maxOffset < 0 {
+		maxOffset = 0
+	}
+	if a.state.ScrollOffset > maxOffset {
+		a.state.ScrollOffset = maxOffset
+	}
+
+	startIdx := a.state.ScrollOffset
+	endIdx := startIdx + visibleHeight
+	if endIdx > len(tasks) {
+		endIdx = len(tasks)
 	}
 
 	var lines []string
-	for i, task := range tasks {
-		if i >= height {
-			break
-		}
+	maxTitleWidth := width - 7 // Account for " ▶● " prefix
+
+	// Top scroll indicator (always present)
+	if startIdx > 0 {
+		lines = append(lines, styles.HelpHintStyle.Render(fmt.Sprintf("  ↑ %d more above", startIdx)))
+	} else {
+		lines = append(lines, "") // Empty line to reserve space
+	}
+
+	for i := startIdx; i < endIdx; i++ {
+		task := tasks[i]
 
 		// Priority indicator
 		priority := styles.PriorityIndicator(task.Priority)
 
-		// Task title
+		// Task title - truncate if needed
 		title := task.Title
-		if len(title) > width-5 {
-			title = title[:width-8] + "..."
+		if len(title) > maxTitleWidth {
+			title = title[:maxTitleWidth-3] + "..."
+		}
+
+		// Pad title to fill width
+		padding := ""
+		if len(title) < maxTitleWidth {
+			padding = strings.Repeat(" ", maxTitleWidth-len(title))
 		}
 
 		// Style based on selection
 		var line string
 		if i == a.state.SelectedIndex {
-			line = fmt.Sprintf(" ▶%s %s", priority, styles.TaskSelectedStyle.Render(title))
+			line = fmt.Sprintf(" ▶%s %s%s", priority, styles.TaskSelectedStyle.Render(title), padding)
 		} else {
-			line = fmt.Sprintf("  %s %s", priority, styles.TaskNormalStyle.Render(title))
+			line = fmt.Sprintf("  %s %s%s", priority, styles.TaskNormalStyle.Render(title), padding)
 		}
 
 		lines = append(lines, line)
 	}
 
-	return strings.Join(lines, "\n")
+	// Bottom scroll indicator (always present)
+	if endIdx < len(tasks) {
+		lines = append(lines, styles.HelpHintStyle.Render(fmt.Sprintf("  ↓ %d more below", len(tasks)-endIdx)))
+	} else {
+		lines = append(lines, "") // Empty line to reserve space
+	}
+
+	content := strings.Join(lines, "\n")
+	return styles.TaskListStyle.Width(width - 2).Render(content)
 }
 
 func (a *App) renderPreview(width, height int) string {
 	task := a.state.SelectedTask()
 	if task == nil {
-		return styles.HelpHintStyle.Render("Select a task to preview")
+		return styles.PreviewStyle.Width(width - 2).Render(styles.HelpHintStyle.Render("Select a task to preview"))
 	}
 
 	var lines []string
@@ -1261,7 +1327,7 @@ func (a *App) renderPreview(width, height int) string {
 	}
 
 	content := strings.Join(lines, "\n")
-	return styles.PreviewStyle.Width(width).Render(content)
+	return styles.PreviewStyle.Width(width - 2).Render(content)
 }
 
 func (a *App) renderStatusBar() string {
@@ -1386,4 +1452,15 @@ func (a *App) renderWelcomeScreen() string {
 	vertPad := strings.Repeat("\n", paddingY)
 
 	return vertPad + modal
+}
+
+// truncateString truncates a string to maxLen characters, adding "..." if truncated
+func truncateString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	if maxLen <= 3 {
+		return s[:maxLen]
+	}
+	return s[:maxLen-3] + "..."
 }

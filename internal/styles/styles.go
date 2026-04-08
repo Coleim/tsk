@@ -16,7 +16,7 @@ var (
 	ColorError      = lipgloss.Color("196") // Bright red
 	ColorMuted      = lipgloss.Color("243") // Muted gray
 	ColorBackground = lipgloss.Color("236") // Dark background
-	ColorBorder     = lipgloss.Color("240") // Border gray
+	ColorBorder     = lipgloss.Color("62")  // Purple/blue border
 
 	// Status-specific colors
 	ColorToDo       = lipgloss.Color("75")  // Light blue
@@ -26,7 +26,7 @@ var (
 	// Priority colors
 	ColorPriorityHigh   = lipgloss.Color("196") // Red
 	ColorPriorityMedium = lipgloss.Color("214") // Orange
-	ColorPriorityLow    = lipgloss.Color("48")  // Green
+	ColorPriorityLow    = lipgloss.Color("244") // Gray
 	ColorPriorityNone   = lipgloss.Color("245") // Gray
 )
 
@@ -71,11 +71,17 @@ var (
 	TaskNormalStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("252"))
 
+	// Task list panel
+	TaskListStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(ColorBorder).
+			Padding(0, 1)
+
 	// Preview panel
 	PreviewStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(ColorBorder).
-			Padding(1)
+			Padding(1, 2)
 
 	// Preview title
 	PreviewTitleStyle = lipgloss.NewStyle().

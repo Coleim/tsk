@@ -15,6 +15,14 @@ The application SHALL display tasks from only one status pane at a time (To Do, 
 - **WHEN** no tasks exist in current pane
 - **THEN** a "No tasks" placeholder is shown
 
+#### Scenario: Task list scrolling
+- **WHEN** there are more tasks than can fit in the visible area
+- **THEN** the list scrolls to keep the selected task visible
+
+#### Scenario: Scroll follows selection
+- **WHEN** user navigates with j/k beyond visible area
+- **THEN** the view scrolls to keep the selected task in view
+
 ### Requirement: User can switch between panes
 The application SHALL allow users to switch between To Do, In Progress, and Done panes.
 
@@ -28,6 +36,14 @@ The application SHALL allow users to switch between To Do, In Progress, and Done
 
 ### Requirement: Preview panel shows selected task
 The application SHALL display a preview panel showing details of the currently selected task.
+
+#### Scenario: Split layout
+- **WHEN** user is on the main board view
+- **THEN** the screen is split 50/50 with task list on the left and preview on the right
+
+#### Scenario: Responsive sizing
+- **WHEN** terminal is resized
+- **THEN** both panels maintain 50% width proportionally
 
 #### Scenario: Preview updates on navigation
 - **WHEN** user navigates to a different task with j/k

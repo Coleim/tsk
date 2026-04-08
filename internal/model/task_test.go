@@ -316,7 +316,7 @@ func TestPrioritySymbol(t *testing.T) {
 	}{
 		{PriorityHigh, "●"},
 		{PriorityMedium, "◐"},
-		{PriorityLow, "○"},
+		{PriorityLow, "●"},
 		{PriorityNone, " "},
 	}
 

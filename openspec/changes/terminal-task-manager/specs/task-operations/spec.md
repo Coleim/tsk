@@ -103,3 +103,11 @@ The application SHALL allow users to move tasks to different panes (status chang
 #### Scenario: Move task left
 - **WHEN** user presses '<' on a task
 - **THEN** task moves to the previous pane (Done → In Progress → To Do)
+
+#### Scenario: Follow moved task
+- **WHEN** user moves a task to another pane
+- **THEN** the view switches to that pane with the moved task selected
+
+#### Scenario: Moved task visible
+- **WHEN** user moves a task to a pane with many tasks
+- **THEN** the list scrolls to show the moved task as selected
