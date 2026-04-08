@@ -29,6 +29,55 @@
 - Line 1: Context info (task count) or action feedback + undo/redo hints
 - Line 2: Keyboard shortcuts (always visible) — help hint `?` shown in header
 
+**Status bar positioning**: The status bar MUST always be pinned to the bottom of the terminal, regardless of content height. Use calculated padding to push the status bar down when content is short.
+
+## Responsive Layout
+
+The UI adapts to terminal size changes:
+
+**Minimum dimensions**: 60 columns × 10 rows (show warning below this)
+
+**Responsive behavior**:
+| Terminal width | Adaptation |
+|----------------|------------|
+| < 80 cols | Hide preview panel, full-width task list |
+| 80-120 cols | 60/40 split (task list / preview) |
+| > 120 cols | 66/33 split (task list / preview) |
+
+| Terminal height | Adaptation |
+|-----------------|------------|
+| < 15 rows | Hide tabs, compact mode |
+| 15-30 rows | Standard layout |
+| > 30 rows | Show more tasks, no change to layout |
+
+**On resize** (`tea.WindowSizeMsg`):
+1. Recalculate panel widths
+2. Re-render immediately
+3. Clamp selection if visible rows decrease
+4. Status bar stays at bottom
+
+**Implementation**:
+```go
+func (a *App) View() string {
+    // Calculate fixed heights
+    headerHeight := 1
+    tabsHeight := 1
+    statusHeight := 2
+    contentHeight := a.state.Height - headerHeight - tabsHeight - statusHeight - 2
+
+    // Render content with padding to push status bar down
+    contentLines := countLines(content)
+    padding := strings.Repeat("\n", max(0, contentHeight - contentLines))
+
+    return lipgloss.JoinVertical(lipgloss.Left,
+        header,
+        tabs,
+        content + padding,
+        statusBar,  // Always at bottom
+    )
+}
+```
+
 ## Help Panel (`?` key)
 
 ```
@@ -176,3 +225,78 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     return m, nil
 }
 ```
+
+---
+
+# Color Scheme
+
+## Status-Specific Colors
+
+Each pane/status uses a distinct color for visual identification:
+
+| Status | Color | ANSI Code | Usage |
+|--------|-------|-----------|-------|
+| To Do | Light blue | #75 | Tab text, status indicators |
+| In Progress | Yellow/amber | #220 | Tab text, status indicators |
+| Done | Green | #48 | Tab text, status indicators |
+
+**Tab rendering**:
+- Active tab: Bold, status color, bracketed `[TO DO (3)]`
+- Inactive tab: Gray (#245), no brackets `IN PROGRESS (2)`
+
+**Priority colors** (unchanged):
+- High: Red (#196)
+- Medium: Orange (#214)
+- Low: Green (#48)
+- None: Gray (#245)
+
+**UI accent colors**:
+- Primary: Bright blue (#39)
+- Accent: Magenta/pink (#213) - used for titles, modal borders
+- Success: Green (#48)
+- Warning: Yellow (#220)
+- Error: Red (#196)
+
+---
+
+# Task Edit Modal
+
+## Fields
+
+The task edit modal includes three editable fields:
+
+| Field | Placeholder | Char Limit | Required |
+|-------|-------------|------------|----------|
+| Title | "Task title..." | 256 | Yes |
+| Description | "Description (optional)..." | 1024 | No |
+| Labels | "Labels (comma-separated)..." | 512 | No |
+
+**Labels format**: Comma-separated values. Whitespace is trimmed from each label.
+
+Example: `bug, urgent, frontend` → `["bug", "urgent", "frontend"]`
+
+**Navigation**:
+- `Tab`: Move to next field
+- `Shift+Tab`: Move to previous field
+- `Enter`: Save changes
+- `Esc`: Cancel without saving
+
+**Visual indicator**: Current field has `▶` prefix on label.
+
+---
+
+# Task Movement Behavior
+
+## Follow Mode
+
+When moving a task between panes with `>` or `<`, the view automatically follows the task:
+
+**Behavior**:
+1. Task status is updated to new pane
+2. View switches to the target pane
+3. Selection moves to the moved task
+4. Status message confirms: "Moved to In Progress"
+
+**Implementation**: `SwitchToTaskInPane(status, taskID)` method updates `CurrentPane` and finds the task's new index.
+
+**Rationale**: Provides immediate feedback and allows continued work on the same task without manual navigation.

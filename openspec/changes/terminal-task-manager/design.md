@@ -77,6 +77,37 @@ This is a new terminal-based task management application. No existing codebase t
 - Help overlay (`?`)
 - Data export (`E`) and import (`I`)
 
+## UX Refinements
+
+### Task Movement Follows Focus
+
+When a task is moved to another pane using `>` or `<`, the view automatically switches to the target pane and selects the moved task. This provides immediate feedback and allows the user to continue working with the task they just moved.
+
+**Behavior**:
+- Moving a task with `>` switches to the next pane and highlights the moved task
+- Moving a task with `<` switches to the previous pane and highlights the moved task
+- The moved task maintains its position in the new pane's list
+
+### Status-Specific Tab Colors
+
+Each pane tab uses a distinct color to improve visual identification:
+- **To Do**: Light blue (#75)
+- **In Progress**: Yellow/amber (#220)
+- **Done**: Green (#48)
+
+Active tabs display in their status color; inactive tabs are gray.
+
+### Labels in Task Edit Modal
+
+The task edit modal (`Enter` on a task) now includes a labels field alongside title and description. Labels can be entered as comma-separated values.
+
+**Field order**:
+1. Title (required)
+2. Description (optional)
+3. Labels (comma-separated, optional)
+
+Navigate between fields with `Tab` / `Shift+Tab`.
+
 ## Risks / Trade-offs
 
 **[Risk]** Terminal compatibility across different emulators → Test on common terminals (iTerm2, Terminal.app, Windows Terminal, xterm). Use well-supported ANSI escape codes only.

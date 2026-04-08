@@ -1,0 +1,154 @@
+# tsk - Terminal Task Manager
+
+A fast, keyboard-driven terminal task manager with Kanban-style workflow.
+
+![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+## Features
+
+- **Kanban Workflow**: Three panes (To Do, In Progress, Done) for visual task tracking
+- **Vim-Style Navigation**: Move between tasks with `j`/`k` and panes with `h`/`l`
+- **Multiple Boards**: Create and switch between separate task boards
+- **Priority Levels**: Set High/Medium/Low/None priority with quick keys
+- **Labels**: Categorize tasks with custom labels
+- **Due Dates**: Track deadlines with due date support
+- **Search & Filter**: Find tasks instantly across all panes
+- **Undo/Redo**: Recover from mistakes with full undo support
+- **Archive**: Clean up completed tasks while preserving history
+- **Export/Import**: Share boards as JSON files
+- **Offline-First**: All data stored locally in `~/.tsk/`
+
+## Installation
+
+### From Source
+
+```bash
+git clone https://github.com/coleim/tsk.git
+cd tsk
+go build -o tsk ./cmd/tsk
+sudo mv tsk /usr/local/bin/
+```
+
+### With Go Install
+
+```bash
+go install github.com/coleim/tsk/cmd/tsk@latest
+```
+
+## Quick Start
+
+```bash
+# Start tsk
+tsk
+
+# First run will prompt for a board name
+# Then you're ready to add tasks!
+```
+
+## Keyboard Shortcuts
+
+### Navigation
+
+| Key | Action |
+|-----|--------|
+| `j` / `↓` | Move down in task list |
+| `k` / `↑` | Move up in task list |
+| `h` / `←` | Switch to previous pane |
+| `l` / `→` | Switch to next pane |
+
+### Task Actions
+
+| Key | Action |
+|-----|--------|
+| `n` | Create new task |
+| `Enter` | Edit task |
+| `d` | Delete task |
+| `>` | Move task to next pane |
+| `<` | Move task to previous pane |
+| `1` | Set HIGH priority |
+| `2` | Set MEDIUM priority |
+| `3` | Set LOW priority |
+| `0` | Clear priority |
+| `L` | Manage labels |
+| `t` | Set due date |
+
+### Board Management
+
+| Key | Action |
+|-----|--------|
+| `b` | Switch boards |
+| `B` | Create new board |
+| `R` | Rename current board |
+| `D` | Delete current board |
+
+### Search & Filter
+
+| Key | Action |
+|-----|--------|
+| `/` | Search tasks |
+| `f` | Open filter panel |
+| `F` | Clear all filters |
+| `s` | Sort by priority |
+
+### Archive & Export (in Done pane)
+
+| Key | Action |
+|-----|--------|
+| `a` | Archive selected task |
+| `A` | Archive all done tasks |
+| `E` | Export current board |
+
+### General
+
+| Key | Action |
+|-----|--------|
+| `u` | Undo last action |
+| `Ctrl+r` | Redo |
+| `?` | Show help |
+| `q` | Quit |
+
+## Data Storage
+
+All data is stored in `~/.tsk/`:
+
+```
+~/.tsk/
+├── data/
+│   ├── boards/      # Board JSON files
+│   └── archive/     # Archived tasks
+└── backups/         # Automatic backups
+```
+
+### Export/Import
+
+Export your current board:
+```bash
+# In the app, press 'E' to export
+# Creates: tsk-export-BoardName.json
+```
+
+Import a board:
+```bash
+tsk import tsk-export-BoardName.json
+```
+
+## Command Line
+
+```bash
+tsk                      # Start the TUI
+tsk import <file>        # Import a board from JSON
+tsk help                 # Show help
+tsk version              # Show version
+```
+
+## Configuration
+
+tsk works out of the box with sensible defaults. Data is auto-saved:
+- After each action (create, edit, delete, move)
+- Every 5 seconds if there are unsaved changes
+- On quit or board switch
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
