@@ -198,13 +198,13 @@
 
 ## 17. Label Popup in Edit View
 
-- [ ] 17.1 Create LabelPopup component with list of all board labels
-- [ ] 17.2 Add showLabelPopup state to TaskEdit struct
-- [ ] 17.3 Implement Tab key to open label popup when on Labels field
-- [ ] 17.4 Implement Tab navigation through popup labels with visual highlight
-- [ ] 17.5 Implement Enter to select highlighted label and append to field
-- [ ] 17.6 Implement Escape to close popup without selection
-- [ ] 17.7 Update Label field View() to render popup overlay when active
-- [ ] 17.8 Style popup with border and current selection highlight
-- [ ] 17.9 Show colored label badges in popup (using board label colors)
-- [ ] 17.10 Close popup automatically after selection
+- [x] 17.1 Create LabelPopup component with list of all board labels
+- [x] 17.2 Add showLabelPopup state to TaskEdit struct
+- [x] 17.3 Implement Tab key to open label popup when on Labels field
+- [x] 17.4 Implement Tab navigation through popup labels with visual highlight
+- [x] 17.5 Implement Enter to select highlighted label and append to field
+- [x] 17.6 Implement Escape to close popup without selection
+- [x] 17.7 Update Label field View() to render popup overlay when active
+- [x] 17.8 Style popup with border and current selection highlight
+- [x] 17.9 Show colored label badges in popup (using board label colors)
+- [x] 17.10 Close popup automatically after selection

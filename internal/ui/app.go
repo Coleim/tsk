@@ -660,6 +660,30 @@ func (a *App) setDetailPriority(p model.Priority) {
 }
 
 func (a *App) handleEditMode(msg tea.KeyMsg) tea.Cmd {
+	// Handle label popup if open
+	if a.taskEdit.IsPopupOpen() {
+		switch msg.String() {
+		case "esc":
+			// Close popup without selection
+			a.taskEdit.CloseLabelPopup()
+			return nil
+		case "tab":
+			// Move to next label in popup
+			a.taskEdit.NextPopupLabel()
+			return nil
+		case "shift+tab":
+			// Move to previous label in popup
+			a.taskEdit.PrevPopupLabel()
+			return nil
+		case "enter":
+			// Select current label and close popup
+			a.taskEdit.SelectPopupLabel()
+			return nil
+		}
+		// Ignore other keys while popup is open
+		return nil
+	}
+
 	switch msg.String() {
 	case "esc":
 		// Cancel editing
@@ -668,9 +692,9 @@ func (a *App) handleEditMode(msg tea.KeyMsg) tea.Cmd {
 		return nil
 
 	case "tab":
-		// If on labels field, cycle through labels; otherwise switch fields
+		// If on labels field, open popup; otherwise switch fields
 		if a.taskEdit.IsLabelsField() {
-			a.taskEdit.CycleLabel()
+			a.taskEdit.OpenLabelPopup()
 			return nil
 		}
 		return a.taskEdit.NextField()

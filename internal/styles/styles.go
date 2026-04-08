@@ -255,3 +255,27 @@ func ColoredLabelStyle(c model.LabelColor) lipgloss.Style {
 func LabelBadge(name string, c model.LabelColor) string {
 	return ColoredLabelStyle(c).Render("[" + name + "]")
 }
+
+// PopupStyle returns the style for popup overlays
+var PopupStyle = lipgloss.NewStyle().
+	Border(lipgloss.RoundedBorder()).
+	BorderForeground(ColorAccent).
+	Padding(0, 1).
+	MarginLeft(2)
+
+// PopupTitleStyle returns the style for popup titles
+var PopupTitleStyle = lipgloss.NewStyle().
+	Foreground(ColorAccent).
+	Bold(true).
+	MarginBottom(1)
+
+// PopupItemStyle returns the style for normal popup items
+var PopupItemStyle = lipgloss.NewStyle().
+	Padding(0, 1)
+
+// PopupSelectedItemStyle returns the style for selected popup items
+var PopupSelectedItemStyle = lipgloss.NewStyle().
+	Background(ColorAccent).
+	Foreground(lipgloss.Color("#000000")).
+	Bold(true).
+	Padding(0, 1)

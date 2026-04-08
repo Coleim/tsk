@@ -20,13 +20,14 @@ const (
 
 // TaskEdit represents the task editing state
 type TaskEdit struct {
-	Task        *model.Task
-	Board       *model.Board
-	titleInput  textinput.Model
-	descInput   textinput.Model
-	labelInput  textinput.Model
-	activeField EditField
-	labelIdx    int // Index for cycling through labels with Tab
+	Task             *model.Task
+	Board            *model.Board
+	titleInput       textinput.Model
+	descInput        textinput.Model
+	labelInput       textinput.Model
+	activeField      EditField
+	showLabelPopup   bool // Whether label selection popup is visible
+	popupSelectedIdx int  // Currently selected index in popup
 }
 
 // NewTaskEdit creates a new task editor
@@ -48,13 +49,14 @@ func NewTaskEdit(task *model.Task, board *model.Board) *TaskEdit {
 	labelInput.CharLimit = 512
 
 	return &TaskEdit{
-		Task:        task,
-		Board:       board,
-		titleInput:  titleInput,
-		descInput:   descInput,
-		labelInput:  labelInput,
-		activeField: EditFieldTitle,
-		labelIdx:    -1,
+		Task:             task,
+		Board:            board,
+		titleInput:       titleInput,
+		descInput:        descInput,
+		labelInput:       labelInput,
+		activeField:      EditFieldTitle,
+		showLabelPopup:   false,
+		popupSelectedIdx: 0,
 	}
 }
 
@@ -87,8 +89,8 @@ func (te *TaskEdit) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-// CycleLabel cycles through existing board labels when Tab is pressed on labels field
-func (te *TaskEdit) CycleLabel() {
+// OpenLabelPopup opens the label selection popup
+func (te *TaskEdit) OpenLabelPopup() {
 	if te.Board == nil {
 		return
 	}
@@ -96,24 +98,80 @@ func (te *TaskEdit) CycleLabel() {
 	if len(labels) == 0 {
 		return
 	}
-	te.labelIdx = (te.labelIdx + 1) % len(labels)
+	te.showLabelPopup = true
+	te.popupSelectedIdx = 0
+}
 
-	// Get current labels and append the new one
-	current := te.labelInput.Value()
-	newLabel := labels[te.labelIdx]
+// CloseLabelPopup closes the label selection popup without selecting
+func (te *TaskEdit) CloseLabelPopup() {
+	te.showLabelPopup = false
+}
 
-	if current == "" {
-		te.labelInput.SetValue(newLabel)
-	} else {
-		// Check if label already exists
-		existing := te.GetLabels()
-		for _, l := range existing {
-			if l == newLabel {
-				return // Already have this label
-			}
-		}
-		te.labelInput.SetValue(current + ", " + newLabel)
+// IsPopupOpen returns true if the label popup is currently visible
+func (te *TaskEdit) IsPopupOpen() bool {
+	return te.showLabelPopup
+}
+
+// NextPopupLabel moves selection to next label in popup
+func (te *TaskEdit) NextPopupLabel() {
+	if te.Board == nil {
+		return
 	}
+	labels := te.Board.AllLabels()
+	if len(labels) == 0 {
+		return
+	}
+	te.popupSelectedIdx = (te.popupSelectedIdx + 1) % len(labels)
+}
+
+// PrevPopupLabel moves selection to previous label in popup
+func (te *TaskEdit) PrevPopupLabel() {
+	if te.Board == nil {
+		return
+	}
+	labels := te.Board.AllLabels()
+	if len(labels) == 0 {
+		return
+	}
+	te.popupSelectedIdx--
+	if te.popupSelectedIdx < 0 {
+		te.popupSelectedIdx = len(labels) - 1
+	}
+}
+
+// SelectPopupLabel adds the currently selected label to the field and closes popup
+func (te *TaskEdit) SelectPopupLabel() {
+	if te.Board == nil || !te.showLabelPopup {
+		return
+	}
+	labels := te.Board.AllLabels()
+	if len(labels) == 0 || te.popupSelectedIdx >= len(labels) {
+		te.showLabelPopup = false
+		return
+	}
+
+	newLabel := labels[te.popupSelectedIdx]
+	current := te.labelInput.Value()
+
+	// Check if label already exists
+	existing := te.GetLabels()
+	alreadyHas := false
+	for _, l := range existing {
+		if l == newLabel {
+			alreadyHas = true
+			break
+		}
+	}
+
+	if !alreadyHas {
+		if current == "" {
+			te.labelInput.SetValue(newLabel)
+		} else {
+			te.labelInput.SetValue(current + ", " + newLabel)
+		}
+	}
+
+	te.showLabelPopup = false
 }
 
 // NextField moves to the next field
@@ -216,17 +274,22 @@ func (te *TaskEdit) View(width, height int) string {
 		labelsLabel = "▶ Labels:"
 	}
 	lines = append(lines, styles.PreviewLabelStyle.Render(labelsLabel))
-	if te.activeField == EditFieldLabels {
-		lines = append(lines, te.labelInput.View())
-		lines = append(lines, styles.HelpHintStyle.Render("  (Tab to cycle through existing labels)"))
-	} else {
-		lines = append(lines, te.labelInput.View())
+	lines = append(lines, te.labelInput.View())
+
+	// Show popup or hint based on state
+	if te.showLabelPopup && te.Board != nil {
+		// Render the label popup
+		lines = append(lines, te.renderLabelPopup())
+	} else if te.activeField == EditFieldLabels {
+		lines = append(lines, styles.HelpHintStyle.Render("  (Tab to open label picker)"))
 	}
 	lines = append(lines, "")
 
 	// Help text
-	if te.activeField == EditFieldLabels {
-		lines = append(lines, styles.HelpHintStyle.Render("Tab: cycle labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+	if te.showLabelPopup {
+		lines = append(lines, styles.HelpHintStyle.Render("Tab: next  Shift+Tab: prev  Enter: select  Esc: close"))
+	} else if te.activeField == EditFieldLabels {
+		lines = append(lines, styles.HelpHintStyle.Render("Tab: open labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
 	} else {
 		lines = append(lines, styles.HelpHintStyle.Render("Tab: next field  Shift+Tab: prev field  Enter: save  Esc: cancel"))
 	}
@@ -247,4 +310,34 @@ func (te *TaskEdit) View(width, height int) string {
 // IsLabelsField returns true if the labels field is active
 func (te *TaskEdit) IsLabelsField() bool {
 	return te.activeField == EditFieldLabels
+}
+
+// renderLabelPopup renders the label selection popup using Lipgloss
+func (te *TaskEdit) renderLabelPopup() string {
+	if te.Board == nil {
+		return ""
+	}
+
+	labels := te.Board.AllLabels()
+	if len(labels) == 0 {
+		return styles.HelpHintStyle.Render("  (No labels available)")
+	}
+
+	var items []string
+	items = append(items, styles.PopupTitleStyle.Render("Select Label"))
+
+	for i, labelName := range labels {
+		label := te.Board.GetLabel(labelName)
+		badge := styles.LabelBadge(label.Name, label.Color)
+
+		if i == te.popupSelectedIdx {
+			// Highlight selected item with background
+			items = append(items, styles.PopupSelectedItemStyle.Render("▶ "+badge))
+		} else {
+			items = append(items, styles.PopupItemStyle.Render("  "+badge))
+		}
+	}
+
+	content := strings.Join(items, "\n")
+	return styles.PopupStyle.Render(content)
 }
