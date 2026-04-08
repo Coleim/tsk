@@ -52,7 +52,7 @@ The application SHALL display a preview panel showing details of the currently s
 
 #### Scenario: Preview content
 - **WHEN** a task is selected
-- **THEN** preview shows title, status, priority, due date, labels, and truncated description
+- **THEN** preview shows title, status, priority, due date, colored label badges, and truncated description
 
 #### Scenario: Empty preview
 - **WHEN** no task is selected or pane is empty
@@ -60,10 +60,12 @@ The application SHALL display a preview panel showing details of the currently s
 
 ### Requirement: Task detail view for full editing
 The application SHALL provide a full-screen detail view for editing a task.
+The edit view uses the full terminal width and height for maximum editing space.
 
 #### Scenario: Open task detail
 - **WHEN** user presses Enter on a task
 - **THEN** a full-screen detail view opens for editing all task properties
+- **AND** the view fills the entire terminal, not a centered modal
 
 #### Scenario: Close detail view
 - **WHEN** user presses Escape in detail view

@@ -21,7 +21,7 @@ The application SHALL display a two-panel layout: task list (left) and preview (
 
 #### Scenario: Preview panel
 - **WHEN** a task is selected
-- **THEN** right panel shows task details (title, status, priority, due date, labels, description)
+- **THEN** right panel shows task details (title, status, priority, due date, colored label badges, description)
 
 #### Scenario: Panel proportions
 - **WHEN** displaying the layout

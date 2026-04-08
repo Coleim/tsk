@@ -50,10 +50,12 @@ The application SHALL allow users to set priority levels (High, Medium, Low, Non
 
 ### Requirement: User can add labels to tasks
 The application SHALL allow users to add text labels to tasks for categorization.
+Labels are stored at the board level for reusability across tasks, with each label having a unique color.
 
 #### Scenario: Add label
 - **WHEN** user presses 'L' on a task and enters a label name
 - **THEN** the label is added to the task
+- **AND** if the label is new, it is created at the board level with an auto-assigned color
 
 #### Scenario: Remove label
 - **WHEN** user presses 'L' and selects an existing label
@@ -61,7 +63,12 @@ The application SHALL allow users to add text labels to tasks for categorization
 
 #### Scenario: Labels display on task
 - **WHEN** task has labels
-- **THEN** labels appear as colored tags below the task title
+- **THEN** labels appear as colored badges below the task title
+- **AND** each label displays with its assigned color (red, orange, yellow, green, blue, purple, pink, or cyan)
+
+#### Scenario: Label color consistency
+- **WHEN** the same label is used on multiple tasks
+- **THEN** the label displays with the same color on all tasks
 
 ### Requirement: User can set due dates
 The application SHALL allow users to set due dates on tasks.

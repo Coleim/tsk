@@ -28,6 +28,16 @@ var (
 	ColorPriorityMedium = lipgloss.Color("214") // Orange
 	ColorPriorityLow    = lipgloss.Color("244") // Gray
 	ColorPriorityNone   = lipgloss.Color("245") // Gray
+
+	// Label colors
+	ColorLabelRed    = lipgloss.Color("196") // Red
+	ColorLabelOrange = lipgloss.Color("214") // Orange
+	ColorLabelYellow = lipgloss.Color("226") // Yellow
+	ColorLabelGreen  = lipgloss.Color("48")  // Green
+	ColorLabelBlue   = lipgloss.Color("39")  // Blue
+	ColorLabelPurple = lipgloss.Color("135") // Purple
+	ColorLabelPink   = lipgloss.Color("213") // Pink
+	ColorLabelCyan   = lipgloss.Color("51")  // Cyan
 )
 
 // Base styles
@@ -208,4 +218,40 @@ func TabStyleForStatus(s model.Status, active bool) lipgloss.Style {
 	return lipgloss.NewStyle().
 		Foreground(ColorSecondary).
 		Padding(0, 1)
+}
+
+// LabelColor returns the lipgloss color for a label color
+func LabelColor(c model.LabelColor) lipgloss.Color {
+	switch c {
+	case model.LabelColorRed:
+		return ColorLabelRed
+	case model.LabelColorOrange:
+		return ColorLabelOrange
+	case model.LabelColorYellow:
+		return ColorLabelYellow
+	case model.LabelColorGreen:
+		return ColorLabelGreen
+	case model.LabelColorBlue:
+		return ColorLabelBlue
+	case model.LabelColorPurple:
+		return ColorLabelPurple
+	case model.LabelColorPink:
+		return ColorLabelPink
+	case model.LabelColorCyan:
+		return ColorLabelCyan
+	default:
+		return ColorSecondary
+	}
+}
+
+// ColoredLabelStyle returns a styled label with its color
+func ColoredLabelStyle(c model.LabelColor) lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(LabelColor(c)).
+		Bold(true)
+}
+
+// LabelBadge returns a styled label badge
+func LabelBadge(name string, c model.LabelColor) string {
+	return ColoredLabelStyle(c).Render("[" + name + "]")
 }

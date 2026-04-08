@@ -6,24 +6,54 @@ import (
 	"time"
 )
 
+// LabelColor represents a predefined color for labels
+type LabelColor string
+
+const (
+	LabelColorRed     LabelColor = "red"
+	LabelColorOrange  LabelColor = "orange"
+	LabelColorYellow  LabelColor = "yellow"
+	LabelColorGreen   LabelColor = "green"
+	LabelColorBlue    LabelColor = "blue"
+	LabelColorPurple  LabelColor = "purple"
+	LabelColorPink    LabelColor = "pink"
+	LabelColorCyan    LabelColor = "cyan"
+)
+
+// AllLabelColors returns all available label colors
+func AllLabelColors() []LabelColor {
+	return []LabelColor{
+		LabelColorRed, LabelColorOrange, LabelColorYellow, LabelColorGreen,
+		LabelColorBlue, LabelColorPurple, LabelColorPink, LabelColorCyan,
+	}
+}
+
+// Label represents a reusable label with a color
+type Label struct {
+	Name  string     `json:"name"`
+	Color LabelColor `json:"color"`
+}
+
 // Board represents a Kanban board with tasks
 type Board struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Tasks     []*Task   `json:"tasks"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Tasks       []*Task           `json:"tasks"`
+	BoardLabels map[string]*Label `json:"board_labels,omitempty"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 // NewBoard creates a new board with the given name
 func NewBoard(id, name string) *Board {
 	now := time.Now()
 	return &Board{
-		ID:        id,
-		Name:      name,
-		Tasks:     []*Task{},
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID:          id,
+		Name:        name,
+		Tasks:       []*Task{},
+		BoardLabels: make(map[string]*Label),
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 }
 
@@ -189,4 +219,41 @@ func (b *Board) AllLabels() []string {
 	}
 	sort.Strings(labels)
 	return labels
+}
+
+// GetLabel returns the Label for a given name, creating it if needed
+func (b *Board) GetLabel(name string) *Label {
+	if b.BoardLabels == nil {
+		b.BoardLabels = make(map[string]*Label)
+	}
+	if label, exists := b.BoardLabels[name]; exists {
+		return label
+	}
+	// Create new label with auto-assigned color
+	colors := AllLabelColors()
+	color := colors[len(b.BoardLabels)%len(colors)]
+	label := &Label{Name: name, Color: color}
+	b.BoardLabels[name] = label
+	b.UpdatedAt = time.Now()
+	return label
+}
+
+// EnsureLabelsExist ensures all labels used by tasks exist in BoardLabels
+func (b *Board) EnsureLabelsExist() {
+	if b.BoardLabels == nil {
+		b.BoardLabels = make(map[string]*Label)
+	}
+	for _, task := range b.Tasks {
+		for _, labelName := range task.Labels {
+			b.GetLabel(labelName)
+		}
+	}
+}
+
+// SetLabelColor updates the color of an existing label
+func (b *Board) SetLabelColor(name string, color LabelColor) {
+	if label := b.GetLabel(name); label != nil {
+		label.Color = color
+		b.UpdatedAt = time.Now()
+	}
 }

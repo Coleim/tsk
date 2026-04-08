@@ -32,17 +32,31 @@ type Task struct {
 }
 
 type Board struct {
-    ID        string    `json:"id"`
-    Name      string    `json:"name"`
-    Tasks     []Task    `json:"tasks"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+    ID          string              `json:"id"`
+    Name        string              `json:"name"`
+    Tasks       []Task              `json:"tasks"`
+    BoardLabels map[string]*Label   `json:"board_labels,omitempty"` // Board-level label definitions
+    CreatedAt   time.Time           `json:"created_at"`
+    UpdatedAt   time.Time           `json:"updated_at"`
 }
+
+type Label struct {
+    Name  string     `json:"name"`
+    Color LabelColor `json:"color"` // red, orange, yellow, green, blue, purple, pink, cyan
+}
+
+type LabelColor string // One of: red, orange, yellow, green, blue, purple, pink, cyan
 ```
 
 ## Labels
 
-Free-form text tags for categorizing tasks beyond the fixed status panes. Useful for cross-cutting concerns:
+Labels are stored at the board level for reusability across tasks. Each label has a name and a color, assigned automatically from a predefined palette when created. This ensures consistent coloring when the same label appears on multiple tasks.
+
+**Available colors**: red, orange, yellow, green, blue, purple, pink, cyan
+
+When a new label is added to a task, it is automatically created at the board level with the next available color (cycling through the palette).
+
+**Use cases** - Useful for cross-cutting concerns:
 
 | Category | Example labels |
 |----------|----------------|

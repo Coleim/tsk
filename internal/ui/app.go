@@ -155,6 +155,8 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.textInput.Placeholder = "My Tasks"
 			a.textInput.Focus()
 		} else {
+			// Ensure all labels have colors assigned
+			msg.board.EnsureLabelsExist()
 			a.state.SetBoard(msg.board)
 		}
 		return a, nil
@@ -684,6 +686,11 @@ func (a *App) handleEditMode(msg tea.KeyMsg) tea.Cmd {
 			newDesc := a.taskEdit.GetDescription()
 			newLabels := a.taskEdit.GetLabels()
 			task := a.taskEdit.Task
+
+			// Ensure all labels exist in board (gives them colors)
+			for _, labelName := range newLabels {
+				a.state.Board.GetLabel(labelName)
+			}
 
 			cmd := undo.NewEditTaskCommand(task, newTitle, newDesc, task.DueDate, newLabels)
 			if err := a.undoManager.Execute(a.state.Board, cmd); err == nil {
@@ -1383,9 +1390,13 @@ func (a *App) renderPreview(width, height int) string {
 		lines = append(lines, styles.PreviewLabelStyle.Render("Due: ")+styles.PreviewValueStyle.Render(task.DueDate.Format("Jan 2, 2006")))
 	}
 
-	if len(task.Labels) > 0 {
-		labels := strings.Join(task.Labels, ", ")
-		lines = append(lines, styles.PreviewLabelStyle.Render("Labels: ")+styles.PreviewValueStyle.Render(labels))
+	if len(task.Labels) > 0 && a.state.Board != nil {
+		var labelBadges []string
+		for _, labelName := range task.Labels {
+			label := a.state.Board.GetLabel(labelName)
+			labelBadges = append(labelBadges, styles.LabelBadge(label.Name, label.Color))
+		}
+		lines = append(lines, styles.PreviewLabelStyle.Render("Labels: ")+strings.Join(labelBadges, " "))
 	}
 
 	if task.Description != "" {

@@ -151,7 +151,7 @@ func (te *TaskEdit) GetLabels() []string {
 	return labels
 }
 
-// View renders the edit view
+// View renders the edit view (full screen)
 func (te *TaskEdit) View(width, height int) string {
 	var lines []string
 
@@ -191,16 +191,13 @@ func (te *TaskEdit) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	// Create modal box
-	modalWidth := width - 20
-	if modalWidth < 50 {
-		modalWidth = 50
-	}
-	if modalWidth > 80 {
-		modalWidth = 80
+	// Full-screen layout with padding
+	editWidth := width - 4
+	if editWidth < 50 {
+		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(modalWidth).Render(content)
+	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
 
 	// Center vertically
 	boxHeight := strings.Count(box, "\n") + 1
