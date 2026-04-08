@@ -334,6 +334,50 @@ func (s *Storage) ArchiveTasks(tasks []*model.Task, board *model.Board) error {
 	return s.SaveArchive(archive)
 }
 
+// UnarchiveTask removes a task from the archive by ID
+func (s *Storage) UnarchiveTask(taskID string, boardID string) error {
+	archive, err := s.LoadArchive(boardID)
+	if err != nil {
+		return err
+	}
+
+	// Filter out the task
+	newTasks := make([]ArchivedTask, 0, len(archive.Tasks))
+	for _, t := range archive.Tasks {
+		if t.Task.ID != taskID {
+			newTasks = append(newTasks, t)
+		}
+	}
+	archive.Tasks = newTasks
+
+	return s.SaveArchive(archive)
+}
+
+// UnarchiveTasks removes multiple tasks from the archive by IDs
+func (s *Storage) UnarchiveTasks(taskIDs []string, boardID string) error {
+	archive, err := s.LoadArchive(boardID)
+	if err != nil {
+		return err
+	}
+
+	// Create a set of IDs to remove
+	removeSet := make(map[string]bool)
+	for _, id := range taskIDs {
+		removeSet[id] = true
+	}
+
+	// Filter out the tasks
+	newTasks := make([]ArchivedTask, 0, len(archive.Tasks))
+	for _, t := range archive.Tasks {
+		if !removeSet[t.Task.ID] {
+			newTasks = append(newTasks, t)
+		}
+	}
+	archive.Tasks = newTasks
+
+	return s.SaveArchive(archive)
+}
+
 // ExportBoard exports a board to a JSON file at the specified path
 func (s *Storage) ExportBoard(board *model.Board, exportPath string) error {
 	data, err := json.MarshalIndent(board, "", "  ")

@@ -11,6 +11,14 @@ The application SHALL support vim-style navigation keys for tasks.
 - **WHEN** user presses 'k'
 - **THEN** selection moves to the previous task up in the current pane
 
+#### Scenario: Go to bottom with G
+- **WHEN** user presses 'G' (shift+g)
+- **THEN** selection jumps to the last task in the current pane
+
+#### Scenario: Go to top with g
+- **WHEN** user presses 'g' twice (gg)
+- **THEN** selection jumps to the first task in the current pane
+
 ### Requirement: Pane switching with h/l
 The application SHALL support h/l to switch between panes.
 
@@ -189,12 +197,22 @@ The application SHALL allow archiving completed tasks when in DONE pane.
 #### Scenario: Archive selected task
 - **WHEN** user is in DONE pane and presses 'a'
 - **THEN** the selected task is moved to archive file
-- **AND** status bar shows "Archived 1 task"
+- **AND** status bar shows "Archived: <task title> (u to undo)"
+
+#### Scenario: Undo archive
+- **WHEN** user presses 'u' after archiving a task
+- **THEN** the task is restored to DONE pane
+- **AND** status bar shows "Restored: <task title>"
 
 #### Scenario: Archive all done tasks
 - **WHEN** user is in DONE pane and presses 'A'
 - **THEN** all tasks in DONE pane are moved to archive file
-- **AND** status bar shows "Archived N tasks"
+- **AND** status bar shows "Archived N tasks (u to undo)"
+
+#### Scenario: Undo archive all
+- **WHEN** user presses 'u' after archiving all done tasks
+- **THEN** all archived tasks are restored to DONE pane
+- **AND** status bar shows "Restored N tasks"
 
 #### Scenario: Archive keys not available outside DONE
 - **WHEN** user is in TO DO or IN PROGRESS pane

@@ -254,3 +254,91 @@ func (c *LabelChangeCommand) Undo(board *model.Board) error {
 func (c *LabelChangeCommand) Description() string {
 	return fmt.Sprintf("Change labels: %s", c.TaskTitle)
 }
+
+// ArchiveTaskCommand handles archiving a single task with undo
+type ArchiveTaskCommand struct {
+	ArchivedTask *model.Task
+	BoardID      string
+	OnUndo       func(taskID, boardID string) error // Callback to remove from archive file
+}
+
+func NewArchiveTaskCommand(task *model.Task, boardID string, onUndo func(taskID, boardID string) error) *ArchiveTaskCommand {
+	// Make a copy of the task for restoration
+	taskCopy := *task
+	return &ArchiveTaskCommand{
+		ArchivedTask: &taskCopy,
+		BoardID:      boardID,
+		OnUndo:       onUndo,
+	}
+}
+
+func (c *ArchiveTaskCommand) Execute(board *model.Board) error {
+	board.RemoveTask(c.ArchivedTask.ID)
+	return nil
+}
+
+func (c *ArchiveTaskCommand) Undo(board *model.Board) error {
+	// Remove from archive file first
+	if c.OnUndo != nil {
+		if err := c.OnUndo(c.ArchivedTask.ID, c.BoardID); err != nil {
+			return err
+		}
+	}
+	// Restore to board
+	board.AddTask(c.ArchivedTask)
+	return nil
+}
+
+func (c *ArchiveTaskCommand) Description() string {
+	return fmt.Sprintf("Archive task: %s", c.ArchivedTask.Title)
+}
+
+// ArchiveTasksCommand handles archiving multiple tasks with undo
+type ArchiveTasksCommand struct {
+	ArchivedTasks []*model.Task
+	BoardID       string
+	OnUndo        func(taskIDs []string, boardID string) error // Callback to remove from archive file
+}
+
+func NewArchiveTasksCommand(tasks []*model.Task, boardID string, onUndo func(taskIDs []string, boardID string) error) *ArchiveTasksCommand {
+	// Make copies of all tasks for restoration
+	copies := make([]*model.Task, len(tasks))
+	for i, task := range tasks {
+		taskCopy := *task
+		copies[i] = &taskCopy
+	}
+	return &ArchiveTasksCommand{
+		ArchivedTasks: copies,
+		BoardID:       boardID,
+		OnUndo:        onUndo,
+	}
+}
+
+func (c *ArchiveTasksCommand) Execute(board *model.Board) error {
+	for _, task := range c.ArchivedTasks {
+		board.RemoveTask(task.ID)
+	}
+	return nil
+}
+
+func (c *ArchiveTasksCommand) Undo(board *model.Board) error {
+	// Remove from archive file first
+	if c.OnUndo != nil {
+		taskIDs := make([]string, len(c.ArchivedTasks))
+		for i, task := range c.ArchivedTasks {
+			taskIDs[i] = task.ID
+		}
+		if err := c.OnUndo(taskIDs, c.BoardID); err != nil {
+			return err
+		}
+	}
+	// Restore to board
+	for _, task := range c.ArchivedTasks {
+		board.AddTask(task)
+	}
+	return nil
+}
+
+func (c *ArchiveTasksCommand) Description() string {
+	return fmt.Sprintf("Archive %d tasks", len(c.ArchivedTasks))
+}

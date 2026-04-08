@@ -58,6 +58,9 @@ type App struct {
 
 	// Error state
 	err error
+
+	// Pending key for multi-key commands (like gg)
+	pendingKey string
 }
 
 // NewApp creates a new application
@@ -207,8 +210,14 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return a.handleTextInputMode(msg)
 	}
 
+	// Clear pending key for any key except "g" (which may start a "gg" sequence)
+	key := msg.String()
+	if key != "g" {
+		a.pendingKey = ""
+	}
+
 	// Normal mode commands
-	switch msg.String() {
+	switch key {
 	case "q", "ctrl+c":
 		// Save before quit
 		a.save()
@@ -226,6 +235,20 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		a.state.NextPane()
 	case "h", "left":
 		a.state.PrevPane()
+
+	case "G":
+		// Go to bottom (vim style)
+		a.state.SelectLast()
+
+	case "g":
+		// First g - wait for second g
+		if a.pendingKey == "g" {
+			// gg - go to top (vim style)
+			a.state.SelectFirst()
+			a.pendingKey = ""
+		} else {
+			a.pendingKey = "g"
+		}
 
 	case "n":
 		// New task
@@ -1019,17 +1042,24 @@ func (a *App) archiveTask(task *model.Task) {
 		return
 	}
 
-	// Archive the task
+	// Archive the task to storage
 	if err := a.storage.ArchiveTask(task, a.state.Board); err != nil {
 		a.state.SetStatusMessage(fmt.Sprintf("Error: %v", err))
 		return
 	}
 
-	// Remove from board
-	a.state.Board.RemoveTask(task.ID)
+	// Use undo command to remove from board (with callback to unarchive)
+	cmd := undo.NewArchiveTaskCommand(task, a.state.Board.ID, func(taskID, boardID string) error {
+		return a.storage.UnarchiveTask(taskID, boardID)
+	})
+	if err := a.undoManager.Execute(a.state.Board, cmd); err != nil {
+		a.state.SetStatusMessage(fmt.Sprintf("Error: %v", err))
+		return
+	}
+
 	a.state.ClampSelection()
 	a.state.MarkDirty()
-	a.state.SetStatusMessage(fmt.Sprintf("Archived: %s", task.Title))
+	a.state.SetStatusMessage(fmt.Sprintf("Archived: %s (u to undo)", task.Title))
 }
 
 func (a *App) archiveAllDoneTasks() {
@@ -1043,19 +1073,24 @@ func (a *App) archiveAllDoneTasks() {
 		return
 	}
 
-	// Archive all done tasks
+	// Archive all done tasks to storage
 	if err := a.storage.ArchiveTasks(doneTasks, a.state.Board); err != nil {
 		a.state.SetStatusMessage(fmt.Sprintf("Error: %v", err))
 		return
 	}
 
-	// Remove all from board
-	for _, task := range doneTasks {
-		a.state.Board.RemoveTask(task.ID)
+	// Use undo command to remove all from board (with callback to unarchive)
+	cmd := undo.NewArchiveTasksCommand(doneTasks, a.state.Board.ID, func(taskIDs []string, boardID string) error {
+		return a.storage.UnarchiveTasks(taskIDs, boardID)
+	})
+	if err := a.undoManager.Execute(a.state.Board, cmd); err != nil {
+		a.state.SetStatusMessage(fmt.Sprintf("Error: %v", err))
+		return
 	}
+
 	a.state.ClampSelection()
 	a.state.MarkDirty()
-	a.state.SetStatusMessage(fmt.Sprintf("Archived %d tasks", len(doneTasks)))
+	a.state.SetStatusMessage(fmt.Sprintf("Archived %d tasks (u to undo)", len(doneTasks)))
 }
 
 func (a *App) save() error {
@@ -1378,7 +1413,8 @@ func (a *App) renderHelpOverlay() string {
   NAVIGATION                           TASK ACTIONS                           
   j/k or ↓/↑    Move between tasks     n          Create new task             
   h/l or ←/→    Switch panes           Enter      Edit task                   
-                                       d          Delete task                 
+  G             Go to bottom           d          Delete task                 
+  gg            Go to top                 
   MOVE TASKS                           > / <      Move task right/left        
   >             Move to next pane                                             
   <             Move to previous pane  PRIORITY                               

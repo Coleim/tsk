@@ -189,3 +189,5 @@
 - [x] 16.4 Layout: Task list and preview panel now use 30/70 split with borders
 - [x] 16.5 Scrolling: Task list now scrolls to keep selected task visible with "↑ N more above / ↓ N more below" indicators
 - [x] 16.6 Spec updated: Moving task between panes follows task and keeps it visible
+- [x] 16.7 Spec compliance: Archive commands (a/A) are now fully undoable - removes from archive file too
+- [x] 16.8 Vim-style navigation: G jumps to bottom, gg jumps to top of task list

@@ -148,6 +148,19 @@ func (s *AppState) SelectPrev() {
 	}
 }
 
+// SelectFirst moves selection to the first task (gg)
+func (s *AppState) SelectFirst() {
+	s.SelectedIndex = 0
+}
+
+// SelectLast moves selection to the last task (G)
+func (s *AppState) SelectLast() {
+	tasks := s.CurrentTasks()
+	if len(tasks) > 0 {
+		s.SelectedIndex = len(tasks) - 1
+	}
+}
+
 // NextPane switches to the next pane
 func (s *AppState) NextPane() {
 	s.CurrentPane = s.CurrentPane.Next()
