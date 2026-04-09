@@ -1,6 +1,6 @@
 module github.com/coliva/tsk
 
-go 1.24
+go 1.25.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.2
