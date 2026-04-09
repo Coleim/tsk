@@ -3,6 +3,7 @@ package ui
 import (
 	"strings"
 
+	lipgloss "charm.land/lipgloss/v2"
 	"github.com/coliva/tsk/internal/styles"
 )
 
@@ -97,44 +98,55 @@ func (m *Modal) Select() {
 	}
 }
 
-// View renders the modal (full screen)
+// View renders the modal as a compact popup
 func (m *Modal) View(screenWidth, screenHeight int) string {
-	var content strings.Builder
+	var lines []string
 
 	// Title
-	content.WriteString(styles.ModalTitleStyle().Render(m.Title))
-	content.WriteString("\n\n")
+	lines = append(lines, styles.ModalTitleStyle().Render(m.Title))
+	lines = append(lines, "")
 
 	switch m.Type {
 	case ModalConfirm:
-		content.WriteString(m.Message)
-		content.WriteString("\n\n")
+		lines = append(lines, m.Message)
+		lines = append(lines, "")
 
 		// Confirm/Cancel buttons
-		yes := styles.PreviewLabelStyle().Render("[Y] " + m.ConfirmText)
-		no := styles.HelpHintStyle().Render("[N] " + m.CancelText)
-		content.WriteString(yes + "    " + no)
+		yes := "[Y] " + m.ConfirmText
+		no := "[N] " + m.CancelText
+		buttonsLine := styles.PreviewLabelStyle().Render(yes) + "  " + styles.HelpHintStyle().Render(no)
+		lines = append(lines, buttonsLine)
 
 	case ModalSelect:
+		maxWidth := lipgloss.Width(m.Title)
 		for i, opt := range m.Options {
+			var line string
 			if i == m.SelectedIndex {
-				content.WriteString(styles.TaskSelectedStyle().Render(" ▶ " + opt))
+				line = styles.TaskSelectedStyle().Render(" ▶ " + opt)
 			} else {
-				content.WriteString(styles.TaskNormalStyle().Render("   " + opt))
+				line = styles.TaskNormalStyle().Render("   " + opt)
 			}
-			content.WriteString("\n")
+			lines = append(lines, line)
+			if lipgloss.Width(line) > maxWidth {
+				maxWidth = lipgloss.Width(line)
+			}
 		}
-		content.WriteString("\n")
-		content.WriteString(styles.HelpHintStyle().Render("j/k to navigate, Enter to select, Esc to cancel"))
+		lines = append(lines, "")
+		helpLine := styles.HelpHintStyle().Render("j/k:navigate Enter:select Esc:cancel")
+		lines = append(lines, helpLine)
+		if lipgloss.Width(helpLine) > maxWidth {
+			maxWidth = lipgloss.Width(helpLine)
+		}
+
+		// Build content and set width for select modals
+		content := strings.Join(lines, "\n")
+		if maxWidth < 30 {
+			maxWidth = 30
+		}
+		return styles.ModalStyle().Width(maxWidth).Render(content)
 	}
 
-	// Full-screen layout
-	editWidth := screenWidth - 4
-	if editWidth < 50 {
-		editWidth = 50
-	}
-
-	modalBox := styles.ModalStyle().Width(editWidth).Height(screenHeight - 4).Render(content.String())
-
-	return modalBox
+	// For confirm modals, don't set width - let it expand naturally
+	content := strings.Join(lines, "\n")
+	return styles.ModalStyle().Render(content)
 }

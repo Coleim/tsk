@@ -288,6 +288,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		a.state.Mode = model.ModeInsert
 		a.textInput.SetValue("")
 		a.textInput.Placeholder = "Task title..."
+		a.textInput.Width = 44 // Fit within 50-char popup (accounting for padding)
 		a.textInput.Focus()
 		return textinput.Blink
 
@@ -1197,10 +1198,12 @@ func (a *App) View() string {
 		return a.taskDetail.View(a.state.Width, a.state.Height)
 	}
 
-	// Modal overlay (for confirmations, selections)
+	// Modal overlay (for confirmations, selections) - popup on main view
 	if a.state.Mode == model.ModeModal && a.state.ActiveModal != nil {
 		if modal, ok := a.state.ActiveModal.(*Modal); ok {
-			return modal.View(a.state.Width, a.state.Height)
+			mainView := a.renderMainView()
+			popup := modal.View(a.state.Width, a.state.Height)
+			return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
 		}
 	}
 
@@ -1216,8 +1219,15 @@ func (a *App) View() string {
 		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
 	}
 
-	// Text input overlay (when in insert mode - NOT search)
-	if a.state.Mode == model.ModeInsert || a.state.Mode == model.ModeWelcome {
+	// Insert mode: overlay new task popup on main view
+	if a.state.Mode == model.ModeInsert {
+		mainView := a.renderMainView()
+		popup := a.renderNewTaskPopup()
+		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
+	}
+
+	// Welcome mode (still full-screen for onboarding)
+	if a.state.Mode == model.ModeWelcome {
 		return a.renderWithTextInput("")
 	}
 
@@ -1517,6 +1527,27 @@ func (a *App) renderWithTextInput(base string) string {
 		editWidth = 50
 	}
 	return styles.ModalStyle().Width(editWidth).Height(a.state.Height - 4).Render(modal)
+}
+
+// renderNewTaskPopup renders a compact popup for new task creation
+func (a *App) renderNewTaskPopup() string {
+	var b strings.Builder
+
+	// Title
+	b.WriteString(styles.ModalTitleStyle().Render("New Task"))
+	b.WriteString("\n\n")
+
+	// Input
+	b.WriteString(a.textInput.View())
+	b.WriteString("\n\n")
+
+	// Help
+	b.WriteString(styles.HelpHintStyle().Render("Enter:create Esc:cancel"))
+
+	// Create popup box (50 chars wide like search popup)
+	return styles.ModalStyle().
+		Width(50).
+		Render(b.String())
 }
 
 func (a *App) renderLoadingScreen() string {

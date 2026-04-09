@@ -66,17 +66,33 @@ The application SHALL display a two-line status bar at the bottom with context a
 - **THEN** line 1 returns to showing task count
 
 ### Requirement: Application supports full-screen dialogs
-The application SHALL support full-screen dialogs for task creation, editing, labels, filters, and confirmations.
-All dialogs use the full terminal width and height for maximum usability.
+The application SHALL support full-screen dialogs for complex editing operations like task editing, labels management, and filters.
+Simple interactions use popup overlays instead.
 
 #### Scenario: Full-screen dialog display
-- **WHEN** user triggers a dialog action (new task, edit, delete, labels, filter, board switch, due date, help)
+- **WHEN** user triggers a complex editing action (edit task, labels, filter, board switch, due date, help)
 - **THEN** a full-screen dialog appears filling the terminal with focus
 - **AND** the dialog uses the full terminal width and height
 
 #### Scenario: Dialog dismissal
 - **WHEN** user presses Escape in a dialog
 - **THEN** the dialog closes and focus returns to the previous view
+
+### Requirement: Application supports popup overlays
+The application SHALL support compact popup overlays for simple inputs and confirmations, with the board visible behind.
+
+#### Scenario: Popup overlay display
+- **WHEN** user triggers a simple action (new task, delete confirmation, search)
+- **THEN** a centered popup overlay appears
+- **AND** the board remains visible behind the popup
+
+#### Scenario: Popup dismissal
+- **WHEN** user presses Escape in a popup
+- **THEN** the popup closes and the board view is restored
+
+#### Scenario: Delete confirmation popup
+- **WHEN** user presses 'd' to delete a task
+- **THEN** a confirmation popup appears asking to confirm deletion
 
 ### Requirement: Application supports color themes
 The application SHALL use semantic colors for different task priorities and states.
