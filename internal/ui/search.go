@@ -135,7 +135,7 @@ func (s *SimpleSearch) View() string {
 			if len(title) > 35 {
 				title = title[:32] + "..."
 			}
-			b.WriteString(fmt.Sprintf("%s%s\n", prefix, style.Render(title)))
+			fmt.Fprintf(&b, "%s%s\n", prefix, style.Render(title))
 		}
 	}
 
