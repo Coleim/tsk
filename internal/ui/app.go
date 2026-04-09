@@ -17,6 +17,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// Layout constants for responsive design
+const (
+	MinTaskListWidth     = 39 // Minimum width for task list to be readable
+	SinglePanelThreshold = 59 // Below this width, hide preview panel
+	UIMargin             = 1  // Small margin around the entire UI
+)
+
 // Messages
 type (
 	tickMsg        time.Time
@@ -1237,40 +1244,68 @@ func (a *App) View() string {
 }
 
 func (a *App) renderMainView() string {
-	// Calculate layout heights
+	// Calculate layout dimensions (sides margin only)
+	availableWidth := a.state.Width - (UIMargin * 2)
+	availableHeight := a.state.Height
+
 	headerHeight := 1
 	tabsHeight := 1
 	statusHeight := 2
-	contentHeight := a.state.Height - headerHeight - tabsHeight - statusHeight - 1 // -1 for spacing
+	contentHeight := availableHeight - headerHeight - tabsHeight - statusHeight
 	if contentHeight < 1 {
 		contentHeight = 1
 	}
 
-	// Two-panel layout: task list (30%) + preview (70%)
-	leftWidth := a.state.Width * 30 / 100
-	rightWidth := a.state.Width - leftWidth
+	// Responsive width calculation
+	var content string
+	width := availableWidth
 
-	taskList := a.renderTaskList(leftWidth, contentHeight)
-	preview := a.renderPreview(rightWidth, contentHeight)
+	if width < SinglePanelThreshold {
+		// Single-panel mode: task list only, preview hidden
+		taskList := a.renderTaskList(width, contentHeight)
+		content = taskList
+	} else {
+		// Two-panel mode: task list + preview
+		// Task list gets 30% but minimum MinTaskListWidth
+		leftWidth := width * 30 / 100
+		if leftWidth < MinTaskListWidth {
+			leftWidth = MinTaskListWidth
+		}
+		rightWidth := width - leftWidth
 
-	// Join panels horizontally
-	content := lipgloss.JoinHorizontal(lipgloss.Top, taskList, preview)
+		taskList := a.renderTaskList(leftWidth, contentHeight)
+		preview := a.renderPreview(rightWidth, contentHeight)
 
-	// Pad content to fill available height
+		// Join panels horizontally
+		content = lipgloss.JoinHorizontal(lipgloss.Top, taskList, preview)
+	}
+
+	// Pad content to fill available height, but cap at contentHeight
 	contentLines := strings.Count(content, "\n") + 1
 	padding := ""
 	if contentLines < contentHeight {
 		padding = strings.Repeat("\n", contentHeight-contentLines)
 	}
 
+	// Cap the final content to prevent overflow
+	finalContent := content + padding
+	finalLines := strings.Split(finalContent, "\n")
+	if len(finalLines) > contentHeight {
+		finalLines = finalLines[:contentHeight]
+		finalContent = strings.Join(finalLines, "\n")
+	}
+
 	// Build the full view
-	return lipgloss.JoinVertical(
+	view := lipgloss.JoinVertical(
 		lipgloss.Left,
 		a.renderHeader(),
 		a.renderTabs(),
-		content+padding,
+		finalContent,
 		a.renderStatusBar(),
 	)
+
+	// Add side margins only
+	return lipgloss.NewStyle().MarginLeft(UIMargin).MarginRight(UIMargin).Render(view)
 }
 
 func (a *App) renderHeader() string {
@@ -1282,9 +1317,10 @@ func (a *App) renderHeader() string {
 
 	helpHint := styles.HelpHintStyle().Render("Press ? for help")
 
-	// Calculate spacing
+	// Calculate spacing (account for UI margin)
+	availableWidth := a.state.Width - (UIMargin * 2)
 	leftPart := title + boardName
-	spacing := a.state.Width - lipgloss.Width(leftPart) - lipgloss.Width(helpHint) - 2
+	spacing := availableWidth - lipgloss.Width(leftPart) - lipgloss.Width(helpHint) - 2
 	if spacing < 0 {
 		spacing = 0
 	}
@@ -1313,16 +1349,19 @@ func (a *App) renderTabs() string {
 
 func (a *App) renderTaskList(width, height int) string {
 	if a.state.Board == nil {
-		return styles.TaskListStyle().Width(width - 2).Render("No board loaded")
+		return styles.TaskListStyle().Width(width - 2).Height(height).Render("No board loaded")
 	}
 
 	tasks := a.state.CurrentTasks()
 	if len(tasks) == 0 {
-		return styles.TaskListStyle().Width(width - 2).Render(styles.EmptyStateStyle().Render("No tasks • Press 'n' to create"))
+		return styles.TaskListStyle().Width(width - 2).Height(height).Render(styles.EmptyStateStyle().Render("No tasks • Press 'n' to create"))
 	}
 
-	// Each bordered task takes 5 lines (border + padding + content + padding + border)
-	// Reserve 2 lines for scroll indicators
+	// Each bordered task takes 3 lines (top border + content + bottom border)
+	// TaskListStyle adds 2 lines for border (no vertical padding)
+	// Reserve 2 lines for scroll indicators (1 top, 1 bottom)
+	// So: availableLines = height - 2 (task list border) - 2 (indicators) = height - 4
+	// visibleTasks = availableLines / 3
 	visibleHeight := (height - 4) / 3
 	if visibleHeight < 1 {
 		visibleHeight = 1
@@ -1356,15 +1395,24 @@ func (a *App) renderTaskList(width, height int) string {
 	}
 
 	var lines []string
-	// Width calculations: border(2) + padding(2) + "▶ ● " prefix(5) = 9 chars overhead
-	maxTitleWidth := width - 14
-	contentWidth := width - 8 // Inner content width (border + padding added by style)
+	// Width calculations for task items:
+	// - TaskListStyle has border(2) + padding(4) = 6 chars horizontally
+	// - TaskSelectedStyle/TaskNormalStyle have border(2) + padding(2) = 4 chars
+	// - Prefix "▶ ● " or "  ● " = 5 visual chars
+	// So: outer width -> task width -> inner content -> title space
+	taskWidth := width - 8      // Leave room for TaskListStyle border/padding
+	innerWidth := taskWidth - 4 // Task border + padding
+	prefixWidth := 5            // "▶ ● " or "  ● "
+	maxTitleWidth := innerWidth - prefixWidth
+	if maxTitleWidth < 10 {
+		maxTitleWidth = 10
+	}
 
-	// Top scroll indicator (always present)
+	// Top scroll indicator
 	if startIdx > 0 {
 		lines = append(lines, styles.HelpHintStyle().Render(fmt.Sprintf("  ↑ %d more above", startIdx)))
 	} else {
-		lines = append(lines, "") // Empty line to reserve space
+		lines = append(lines, styles.HelpHintStyle().Render("  ─ top ─"))
 	}
 
 	for i := startIdx; i < endIdx; i++ {
@@ -1384,21 +1432,38 @@ func (a *App) renderTaskList(width, height int) string {
 		if i == a.state.SelectedIndex {
 			// Selected: arrow + priority + title, with accent border
 			content := fmt.Sprintf("▶ %s %s", priority, title)
-			line = styles.TaskSelectedStyle().Width(contentWidth).Render(content)
+			line = styles.TaskSelectedStyle().Width(taskWidth).Render(content)
 		} else {
 			// Unselected: priority + title, with subtle border
 			content := fmt.Sprintf("  %s %s", priority, title)
-			line = styles.TaskNormalStyle().Width(contentWidth).Render(content)
+			line = styles.TaskNormalStyle().Width(taskWidth).Render(content)
 		}
 
 		lines = append(lines, line)
 	}
 
-	// Bottom scroll indicator (always present)
+	// Calculate how many lines we've used:
+	// - 1 for top indicator
+	// - 3 per task (bordered task = top border + content + bottom border)
+	// - 1 for bottom indicator
+	// TaskListStyle adds border (1 top + 1 bottom = 2 total)
+	usedLines := 1 + (endIdx-startIdx)*3 + 1
+	availableInner := height - 2 // Subtract TaskListStyle border(2)
+	spacerLines := availableInner - usedLines
+	if spacerLines < 0 {
+		spacerLines = 0
+	}
+
+	// Add spacer to push bottom indicator down
+	for i := 0; i < spacerLines; i++ {
+		lines = append(lines, "")
+	}
+
+	// Bottom scroll indicator (always reserve 1 line)
 	if endIdx < len(tasks) {
 		lines = append(lines, styles.HelpHintStyle().Render(fmt.Sprintf("  ↓ %d more below", len(tasks)-endIdx)))
 	} else {
-		lines = append(lines, "") // Empty line to reserve space
+		lines = append(lines, styles.HelpHintStyle().Render("  ─ end ─"))
 	}
 
 	// Join vertically without extra spacing between bordered tasks

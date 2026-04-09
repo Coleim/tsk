@@ -254,7 +254,7 @@ func TaskListStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(CurrentTheme.BorderLight).
-		Padding(0, 1)
+		Padding(0, 2)
 }
 
 // PreviewStyle returns the preview panel style
