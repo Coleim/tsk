@@ -1401,13 +1401,13 @@ func (a *App) renderTaskList(width, height int) string {
 
 	// Join vertically without extra spacing between bordered tasks
 	content := lipgloss.JoinVertical(lipgloss.Left, lines...)
-	return styles.TaskListStyle().Width(width - 2).Height(height - 2).Render(content)
+	return styles.TaskListStyle().Width(width - 2).Height(height).Render(content)
 }
 
 func (a *App) renderPreview(width, height int) string {
 	task := a.state.SelectedTask()
 	if task == nil {
-		return styles.PreviewStyle().Width(width - 2).Height(height - 2).Render(styles.HelpHintStyle().Render("Select a task to preview"))
+		return styles.PreviewStyle().Width(width - 2).Height(height).Render(styles.HelpHintStyle().Render("Select a task to preview"))
 	}
 
 	var lines []string
@@ -1436,7 +1436,7 @@ func (a *App) renderPreview(width, height int) string {
 	}
 
 	content := strings.Join(lines, "\n")
-	return styles.PreviewStyle().Width(width - 2).Height(height - 2).Render(content)
+	return styles.PreviewStyle().Width(width - 2).Height(height).Render(content)
 }
 
 func (a *App) renderStatusBar() string {
