@@ -1319,8 +1319,9 @@ func (a *App) renderTaskList(width, height int) string {
 		return styles.TaskListStyle().Width(width - 2).Render(styles.EmptyStateStyle().Render("No tasks • Press 'n' to create"))
 	}
 
-	// Reserve 2 lines for scroll indicators (always present to avoid layout shift)
-	visibleHeight := height - 4
+	// Each bordered task takes 5 lines (border + padding + content + padding + border)
+	// Reserve 2 lines for scroll indicators
+	visibleHeight := (height - 4) / 3
 	if visibleHeight < 1 {
 		visibleHeight = 1
 	}
@@ -1353,7 +1354,9 @@ func (a *App) renderTaskList(width, height int) string {
 	}
 
 	var lines []string
-	maxTitleWidth := width - 7 // Account for " ▶● " prefix
+	// Width calculations: border(2) + padding(2) + "▶ ● " prefix(5) = 9 chars overhead
+	maxTitleWidth := width - 14
+	contentWidth := width - 8 // Inner content width (border + padding added by style)
 
 	// Top scroll indicator (always present)
 	if startIdx > 0 {
@@ -1374,12 +1377,16 @@ func (a *App) renderTaskList(width, height int) string {
 			title = title[:maxTitleWidth-3] + "..."
 		}
 
-		// Style based on selection
+		// Style based on selection - both have rounded borders
 		var line string
 		if i == a.state.SelectedIndex {
-			line = fmt.Sprintf(" ▶%s %s", priority, styles.TaskSelectedStyle().Render(title))
+			// Selected: arrow + priority + title, with accent border
+			content := fmt.Sprintf("▶ %s %s", priority, title)
+			line = styles.TaskSelectedStyle().Width(contentWidth).Render(content)
 		} else {
-			line = fmt.Sprintf("  %s %s", priority, styles.TaskNormalStyle().Render(title))
+			// Unselected: priority + title, with subtle border
+			content := fmt.Sprintf("  %s %s", priority, title)
+			line = styles.TaskNormalStyle().Width(contentWidth).Render(content)
 		}
 
 		lines = append(lines, line)
@@ -1392,8 +1399,9 @@ func (a *App) renderTaskList(width, height int) string {
 		lines = append(lines, "") // Empty line to reserve space
 	}
 
-	content := strings.Join(lines, "\n")
-	return styles.TaskListStyle().Width(width - 2).Render(content)
+	// Join vertically without extra spacing between bordered tasks
+	content := lipgloss.JoinVertical(lipgloss.Left, lines...)
+	return styles.TaskListStyle().Width(width - 2).Height(height - 2).Render(content)
 }
 
 func (a *App) renderPreview(width, height int) string {

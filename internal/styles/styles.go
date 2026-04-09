@@ -229,17 +229,24 @@ func TabCountStyle() lipgloss.Style {
 		Foreground(CurrentTheme.TextMuted)
 }
 
-// TaskSelectedStyle returns the selected task style
+// TaskSelectedStyle returns the selected task style (with full border)
 func TaskSelectedStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Bold(true).
-		Foreground(CurrentTheme.Accent)
+		Foreground(CurrentTheme.Accent).
+		Background(CurrentTheme.Surface).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#cba6f7")). // Charm mauve/lavender
+		Padding(0, 1)
 }
 
-// TaskNormalStyle returns the normal task style
+// TaskNormalStyle returns the normal task style (with subtle border)
 func TaskNormalStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Foreground(CurrentTheme.TextSecondary)
+		Foreground(CurrentTheme.TextSecondary).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#6c7086")). // Charm overlay0
+		Padding(0, 1)
 }
 
 // TaskListStyle returns the task list panel style
