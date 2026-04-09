@@ -785,23 +785,21 @@ func (a *App) handleDueDateMode(msg tea.KeyMsg) tea.Cmd {
 		a.state.Mode = model.ModeNormal
 		return nil
 
+	case "tab":
+		// Cycle through quick date options
+		a.dueDateEditor.NextQuickOption()
+		return nil
+
 	case "enter":
-		if a.dueDateEditor.HasError() {
-			return nil
+		// If we have a quick selection or valid date, save it
+		if a.dueDateEditor.HasQuickSelection() || !a.dueDateEditor.HasError() {
+			a.saveDueDate()
 		}
-		a.saveDueDate()
 		return nil
 
 	case "ctrl+d":
 		// Clear due date
 		a.dueDateEditor.Clear()
-		return nil
-	}
-
-	// Check for quick date keywords
-	value := a.dueDateEditor.CurrentValue()
-	if a.dueDateEditor.HandleQuickDate(value) {
-		// If it was a quick date, we're done
 		return nil
 	}
 
@@ -1173,16 +1171,6 @@ func (a *App) View() string {
 		return a.boardSelector.View(a.state.Width, a.state.Height)
 	}
 
-	// Due date mode
-	if a.state.Mode == model.ModeDueDate && a.dueDateEditor != nil {
-		return a.dueDateEditor.View(a.state.Width, a.state.Height)
-	}
-
-	// Labels mode
-	if a.state.Mode == model.ModeLabels && a.labelEditor != nil {
-		return a.labelEditor.View(a.state.Width, a.state.Height)
-	}
-
 	// Filter mode
 	if a.state.Mode == model.ModeFilter && a.filter != nil {
 		return a.filter.View(a.state.Width, a.state.Height)
@@ -1223,6 +1211,20 @@ func (a *App) View() string {
 	if a.state.Mode == model.ModeInsert {
 		mainView := a.renderMainView()
 		popup := a.renderNewTaskPopup()
+		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
+	}
+
+	// Due date mode: overlay popup on main view
+	if a.state.Mode == model.ModeDueDate && a.dueDateEditor != nil {
+		mainView := a.renderMainView()
+		popup := a.dueDateEditor.View()
+		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
+	}
+
+	// Labels mode: overlay popup on main view
+	if a.state.Mode == model.ModeLabels && a.labelEditor != nil {
+		mainView := a.renderMainView()
+		popup := a.labelEditor.View()
 		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
 	}
 

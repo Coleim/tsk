@@ -140,8 +140,8 @@ func (le *LabelEditor) hasLabel(label string) bool {
 	return false
 }
 
-// View renders the label editor (full screen)
-func (le *LabelEditor) View(width, height int) string {
+// View renders the label editor as popup content
+func (le *LabelEditor) View() string {
 	var lines []string
 
 	lines = append(lines, styles.ModalTitleStyle().Render("Manage Labels"))
@@ -161,9 +161,9 @@ func (le *LabelEditor) View(width, height int) string {
 				labelDisplay = labelName
 			}
 			if i == le.selectedIdx {
-				line = styles.TaskSelectedStyle().Render(" ▶ ") + labelDisplay
+				line = styles.PopupSelectedItemStyle().Render("▶ " + labelDisplay)
 			} else {
-				line = "   " + labelDisplay
+				line = styles.PopupItemStyle().Render("  " + labelDisplay)
 			}
 			lines = append(lines, line)
 		}
@@ -188,13 +188,6 @@ func (le *LabelEditor) View(width, height int) string {
 
 	content := strings.Join(lines, "\n")
 
-	// Full-screen layout
-	editWidth := width - 4
-	if editWidth < 50 {
-		editWidth = 50
-	}
-
-	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
-
-	return box
+	// Popup style - fixed width, no height constraint
+	return styles.ModalStyle().Width(50).Render(content)
 }

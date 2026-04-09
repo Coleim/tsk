@@ -11,6 +11,9 @@ import (
 	"github.com/coliva/tsk/internal/styles"
 )
 
+// Quick date options
+var quickDateOptions = []string{"today", "tomorrow", "next week", "next month", "clear"}
+
 // DueDateEditor handles due date setting for a task
 type DueDateEditor struct {
 	Task       *model.Task
@@ -18,12 +21,13 @@ type DueDateEditor struct {
 	err        string
 	hasDate    bool
 	parsedDate time.Time
+	quickIdx   int // -1 means no quick option selected
 }
 
 // NewDueDateEditor creates a new due date editor
 func NewDueDateEditor(task *model.Task) *DueDateEditor {
 	input := textinput.New()
-	input.Placeholder = "YYYY-MM-DD (e.g., 2026-04-15)"
+	input.Placeholder = "YYYY-MM-DD or Tab for quick options"
 	input.CharLimit = 20
 
 	hasDate := false
@@ -33,9 +37,10 @@ func NewDueDateEditor(task *model.Task) *DueDateEditor {
 	}
 
 	return &DueDateEditor{
-		Task:    task,
-		input:   input,
-		hasDate: hasDate,
+		Task:     task,
+		input:    input,
+		hasDate:  hasDate,
+		quickIdx: -1,
 	}
 }
 
@@ -94,8 +99,8 @@ func (de *DueDateEditor) HasError() bool {
 	return de.err != ""
 }
 
-// View renders the due date editor (full screen)
-func (de *DueDateEditor) View(width, height int) string {
+// View renders the due date editor as popup content
+func (de *DueDateEditor) View() string {
 	var lines []string
 
 	lines = append(lines, styles.ModalTitleStyle().Render("Set Due Date"))
@@ -122,24 +127,25 @@ func (de *DueDateEditor) View(width, height int) string {
 
 	lines = append(lines, "")
 
-	// Quick options
-	lines = append(lines, styles.HelpHintStyle().Render("Quick set:"))
-	lines = append(lines, styles.StatusLine2Style().Render("  today / tomorrow / next week / clear"))
+	// Quick options with selection
+	lines = append(lines, styles.HelpHintStyle().Render("Quick set (Tab to cycle):"))
+	var opts []string
+	for i, opt := range quickDateOptions {
+		if i == de.quickIdx {
+			opts = append(opts, styles.PopupSelectedItemStyle().Render("["+opt+"]"))
+		} else {
+			opts = append(opts, styles.HelpHintStyle().Render(opt))
+		}
+	}
+	lines = append(lines, "  "+strings.Join(opts, "  "))
 	lines = append(lines, "")
 
-	lines = append(lines, styles.HelpHintStyle().Render("Enter: save  Esc: cancel  Backspace: clear all"))
+	lines = append(lines, styles.HelpHintStyle().Render("Enter: save  Esc: cancel  Tab: quick select"))
 
 	content := strings.Join(lines, "\n")
 
-	// Full-screen layout
-	editWidth := width - 4
-	if editWidth < 50 {
-		editWidth = 50
-	}
-
-	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
-
-	return box
+	// Popup style - fixed width, no height constraint
+	return styles.ModalStyle().Width(60).Render(content)
 }
 
 // HandleQuickDate handles quick date shortcuts
@@ -190,6 +196,18 @@ func (de *DueDateEditor) Clear() {
 // CurrentValue returns the current input value
 func (de *DueDateEditor) CurrentValue() string {
 	return de.input.Value()
+}
+
+// NextQuickOption cycles to the next quick date option
+func (de *DueDateEditor) NextQuickOption() {
+	de.quickIdx = (de.quickIdx + 1) % len(quickDateOptions)
+	// Apply the quick option immediately for preview
+	de.HandleQuickDate(quickDateOptions[de.quickIdx])
+}
+
+// HasQuickSelection returns true if a quick option is selected
+func (de *DueDateEditor) HasQuickSelection() bool {
+	return de.quickIdx >= 0
 }
 
 // SetValue sets the input value and validates

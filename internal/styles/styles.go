@@ -324,7 +324,6 @@ func ModalStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Border(lipgloss.DoubleBorder()).
 		BorderForeground(CurrentTheme.Accent).
-		Background(CurrentTheme.Elevated).
 		Padding(1, 2)
 }
 
@@ -495,7 +494,6 @@ func PopupStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(CurrentTheme.Accent).
-		Background(CurrentTheme.Elevated).
 		Padding(0, 1).
 		MarginLeft(2)
 }
@@ -511,17 +509,14 @@ func PopupTitleStyle() lipgloss.Style {
 // PopupItemStyle returns the style for normal popup items
 func PopupItemStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Foreground(CurrentTheme.TextSecondary).
-		Padding(0, 1)
+		Foreground(CurrentTheme.TextSecondary)
 }
 
 // PopupSelectedItemStyle returns the style for selected popup items
 func PopupSelectedItemStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
-		Background(CurrentTheme.Accent).
-		Foreground(CurrentTheme.Background).
-		Bold(true).
-		Padding(0, 1)
+		Foreground(CurrentTheme.Accent).
+		Bold(true)
 }
 
 // TaskCardStyle returns style for task cards with priority accent
