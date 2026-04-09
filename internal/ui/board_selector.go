@@ -150,43 +150,43 @@ func (bs *BoardSelector) View(width, height int) string {
 
 	switch bs.mode {
 	case BoardModeCreate:
-		lines = append(lines, styles.ModalTitleStyle.Render("Create New Board"))
+		lines = append(lines, styles.ModalTitleStyle().Render("Create New Board"))
 		lines = append(lines, "")
-		lines = append(lines, styles.PreviewLabelStyle.Render("Name:"))
+		lines = append(lines, styles.PreviewLabelStyle().Render("Name:"))
 		lines = append(lines, bs.input.View())
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle.Render("Enter: create  Esc: cancel"))
+		lines = append(lines, styles.HelpHintStyle().Render("Enter: create  Esc: cancel"))
 
 	case BoardModeRename:
-		lines = append(lines, styles.ModalTitleStyle.Render("Rename Board"))
+		lines = append(lines, styles.ModalTitleStyle().Render("Rename Board"))
 		lines = append(lines, "")
-		lines = append(lines, styles.PreviewLabelStyle.Render("New name:"))
+		lines = append(lines, styles.PreviewLabelStyle().Render("New name:"))
 		lines = append(lines, bs.input.View())
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle.Render("Enter: rename  Esc: cancel"))
+		lines = append(lines, styles.HelpHintStyle().Render("Enter: rename  Esc: cancel"))
 
 	case BoardModeDelete:
-		lines = append(lines, styles.ModalTitleStyle.Render("Delete Board"))
+		lines = append(lines, styles.ModalTitleStyle().Render("Delete Board"))
 		lines = append(lines, "")
 		if bs.SelectedBoard() != nil {
 			boardName := bs.SelectedBoard().Name
-			lines = append(lines, styles.ErrorStyle.Render(fmt.Sprintf("Delete '%s'?", boardName)))
+			lines = append(lines, styles.ErrorStyle().Render(fmt.Sprintf("Delete '%s'?", boardName)))
 			lines = append(lines, "")
-			lines = append(lines, styles.HelpHintStyle.Render("This cannot be undone!"))
+			lines = append(lines, styles.HelpHintStyle().Render("This cannot be undone!"))
 			lines = append(lines, "")
 			if bs.confirmDelete {
-				lines = append(lines, styles.ErrorStyle.Render("Press 'y' to confirm or Esc to cancel"))
+				lines = append(lines, styles.ErrorStyle().Render("Press 'y' to confirm or Esc to cancel"))
 			} else {
-				lines = append(lines, styles.HelpHintStyle.Render("Press 'd' again to confirm, Esc to cancel"))
+				lines = append(lines, styles.HelpHintStyle().Render("Press 'd' again to confirm, Esc to cancel"))
 			}
 		}
 
 	default: // BoardModeSelect
-		lines = append(lines, styles.ModalTitleStyle.Render("Switch Board"))
+		lines = append(lines, styles.ModalTitleStyle().Render("Switch Board"))
 		lines = append(lines, "")
 
 		if len(bs.boards) == 0 {
-			lines = append(lines, styles.HelpHintStyle.Render("No boards found"))
+			lines = append(lines, styles.HelpHintStyle().Render("No boards found"))
 		} else {
 			for i, board := range bs.boards {
 				var line string
@@ -200,16 +200,16 @@ func (bs *BoardSelector) View(width, height int) string {
 				name := fmt.Sprintf("%s%s (%d tasks)", indicator, board.Name, board.TaskCount)
 
 				if i == bs.selectedIdx {
-					line = styles.TaskSelectedStyle.Render(" ▶ " + name)
+					line = styles.TaskSelectedStyle().Render(" ▶ " + name)
 				} else {
-					line = styles.TaskNormalStyle.Render("   " + name)
+					line = styles.TaskNormalStyle().Render("   " + name)
 				}
 				lines = append(lines, line)
 			}
 		}
 
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle.Render("j/k: navigate  Enter: switch  B: new  R: rename  D: delete  Esc: cancel"))
+		lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Enter: switch  B: new  R: rename  D: delete  Esc: cancel"))
 	}
 
 	content := strings.Join(lines, "\n")
@@ -220,7 +220,7 @@ func (bs *BoardSelector) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }

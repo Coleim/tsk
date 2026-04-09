@@ -184,11 +184,11 @@ func (f *Filter) View(width, height int) string {
 	var lines []string
 
 	// Header
-	lines = append(lines, styles.ModalTitleStyle.Render("Filter Tasks"))
+	lines = append(lines, styles.ModalTitleStyle().Render("Filter Tasks"))
 	lines = append(lines, "")
 
 	// Priority section
-	lines = append(lines, styles.PreviewLabelStyle.Render("Priority:"))
+	lines = append(lines, styles.PreviewLabelStyle().Render("Priority:"))
 	priorities := []struct {
 		p    model.Priority
 		name string
@@ -206,10 +206,10 @@ func (f *Filter) View(width, height int) string {
 		}
 
 		prefix := "  "
-		style := styles.TaskNormalStyle
+		style := styles.TaskNormalStyle()
 		if f.mode == FilterModePriority && f.priorityIdx == i {
 			prefix = "▶ "
-			style = styles.TaskSelectedStyle
+			style = styles.TaskSelectedStyle()
 		}
 
 		prioStyle := styles.PriorityStyle(p.p)
@@ -223,9 +223,9 @@ func (f *Filter) View(width, height int) string {
 	lines = append(lines, "")
 
 	// Labels section
-	lines = append(lines, styles.PreviewLabelStyle.Render("Labels:"))
+	lines = append(lines, styles.PreviewLabelStyle().Render("Labels:"))
 	if len(f.availableLabels) == 0 {
-		lines = append(lines, styles.HelpHintStyle.Render("  No labels in board"))
+		lines = append(lines, styles.HelpHintStyle().Render("  No labels in board"))
 	} else {
 		for i, label := range f.availableLabels {
 			checkbox := "[ ]"
@@ -234,10 +234,10 @@ func (f *Filter) View(width, height int) string {
 			}
 
 			prefix := "  "
-			style := styles.TaskNormalStyle
+			style := styles.TaskNormalStyle()
 			if f.mode == FilterModeLabels && f.labelIdx == i {
 				prefix = "▶ "
-				style = styles.TaskSelectedStyle
+				style = styles.TaskSelectedStyle()
 			}
 
 			line := prefix + checkbox + " " + style.Render(label)
@@ -260,12 +260,12 @@ func (f *Filter) View(width, height int) string {
 				filterParts = append(filterParts, label)
 			}
 		}
-		lines = append(lines, styles.SuccessStyle.Render(fmt.Sprintf("Active: %s", strings.Join(filterParts, ", "))))
+		lines = append(lines, styles.SuccessStyle().Render(fmt.Sprintf("Active: %s", strings.Join(filterParts, ", "))))
 		lines = append(lines, "")
 	}
 
 	// Help text
-	lines = append(lines, styles.HelpHintStyle.Render("j/k: navigate  Space/x: toggle  c: clear  Enter: apply  Esc: cancel"))
+	lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Space/x: toggle  c: clear  Enter: apply  Esc: cancel"))
 
 	content := strings.Join(lines, "\n")
 
@@ -275,7 +275,7 @@ func (f *Filter) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }

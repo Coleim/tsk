@@ -6,10 +6,14 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/coliva/tsk/internal/storage"
+	"github.com/coliva/tsk/internal/styles"
 	"github.com/coliva/tsk/internal/ui"
 )
 
 func main() {
+	// Initialize theme from TSK_THEME environment variable
+	styles.InitTheme()
+
 	// Initialize storage
 	store, err := storage.NewStorage()
 	if err != nil {

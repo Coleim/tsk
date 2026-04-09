@@ -31,29 +31,29 @@ func (td *TaskDetail) View(width, height int) string {
 	var lines []string
 
 	// Header with back navigation hint
-	header := styles.HelpHintStyle.Render("Press Esc or Enter to return")
+	header := styles.HelpHintStyle().Render("Press Esc or Enter to return")
 	lines = append(lines, header)
 	lines = append(lines, "")
 
 	// Task title
-	lines = append(lines, styles.ModalTitleStyle.Render(td.Task.Title))
+	lines = append(lines, styles.ModalTitleStyle().Render(td.Task.Title))
 	lines = append(lines, "")
 
 	// Status
-	statusLine := styles.PreviewLabelStyle.Render("Status:    ") +
+	statusLine := styles.PreviewLabelStyle().Render("Status:    ") +
 		styles.StatusStyle(td.Task.Status).Render(td.Task.Status.String())
 	lines = append(lines, statusLine)
 
 	// Priority
-	priorityLine := styles.PreviewLabelStyle.Render("Priority:  ") +
+	priorityLine := styles.PreviewLabelStyle().Render("Priority:  ") +
 		styles.PriorityStyle(td.Task.Priority).Render(td.Task.Priority.String()) +
 		" " + styles.PriorityIndicator(td.Task.Priority)
 	lines = append(lines, priorityLine)
 
 	// Due date
 	if td.Task.DueDate != nil {
-		dueLine := styles.PreviewLabelStyle.Render("Due:       ") +
-			styles.PreviewValueStyle.Render(td.Task.DueDate.Format("Monday, January 2, 2006"))
+		dueLine := styles.PreviewLabelStyle().Render("Due:       ") +
+			styles.PreviewValueStyle().Render(td.Task.DueDate.Format("Monday, January 2, 2006"))
 		lines = append(lines, dueLine)
 	}
 
@@ -64,39 +64,39 @@ func (td *TaskDetail) View(width, height int) string {
 			label := td.Board.GetLabel(labelName)
 			labelBadges = append(labelBadges, styles.LabelBadge(label.Name, label.Color))
 		}
-		labelsLine := styles.PreviewLabelStyle.Render("Labels:    ") + strings.Join(labelBadges, " ")
+		labelsLine := styles.PreviewLabelStyle().Render("Labels:    ") + strings.Join(labelBadges, " ")
 		lines = append(lines, labelsLine)
 	}
 
 	// Created/Updated times
 	lines = append(lines, "")
-	createdLine := styles.HelpHintStyle.Render(fmt.Sprintf("Created: %s",
+	createdLine := styles.HelpHintStyle().Render(fmt.Sprintf("Created: %s",
 		td.Task.CreatedAt.Format("Jan 2, 2006 3:04 PM")))
 	lines = append(lines, createdLine)
 
-	updatedLine := styles.HelpHintStyle.Render(fmt.Sprintf("Updated: %s",
+	updatedLine := styles.HelpHintStyle().Render(fmt.Sprintf("Updated: %s",
 		td.Task.UpdatedAt.Format("Jan 2, 2006 3:04 PM")))
 	lines = append(lines, updatedLine)
 
 	// Description
 	lines = append(lines, "")
 	if td.Task.Description != "" {
-		lines = append(lines, styles.PreviewLabelStyle.Render("Description:"))
+		lines = append(lines, styles.PreviewLabelStyle().Render("Description:"))
 		lines = append(lines, "")
 
 		// Word wrap description
 		wrapped := wordWrap(td.Task.Description, width-4)
 		for _, line := range wrapped {
-			lines = append(lines, styles.PreviewValueStyle.Render(line))
+			lines = append(lines, styles.PreviewValueStyle().Render(line))
 		}
 	} else {
-		lines = append(lines, styles.HelpHintStyle.Render("(No description)"))
+		lines = append(lines, styles.HelpHintStyle().Render("(No description)"))
 	}
 
 	// Add shortcuts at bottom
 	lines = append(lines, "")
-	lines = append(lines, styles.StatusLine2Style.Render("───────────────────────────────────────"))
-	lines = append(lines, styles.StatusLine2Style.Render("e:edit  d:delete  1-3:priority  L:labels  t:due date"))
+	lines = append(lines, styles.StatusLine2Style().Render("───────────────────────────────────────"))
+	lines = append(lines, styles.StatusLine2Style().Render("e:edit  d:delete  1-3:priority  L:labels  t:due date"))
 
 	content := strings.Join(lines, "\n")
 
@@ -106,7 +106,7 @@ func (td *TaskDetail) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }

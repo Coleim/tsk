@@ -5,10 +5,11 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	lipglossv1 "github.com/charmbracelet/lipgloss"
 	"github.com/coliva/tsk/internal/model"
 	"github.com/coliva/tsk/internal/storage"
 	"github.com/coliva/tsk/internal/styles"
@@ -53,7 +54,7 @@ type App struct {
 	boardSelector *BoardSelector
 
 	// Search component
-	search *Search
+	search *SimpleSearch
 
 	// Filter component
 	filter *Filter
@@ -78,10 +79,10 @@ func NewApp(store *storage.Storage) *App {
 	ti.Placeholder = "Enter text..."
 	ti.CharLimit = 256
 
-	// Create spinner with dots style
+	// Create spinner with dots style (using v1 lipgloss for bubbles compatibility)
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(styles.ColorAccent)
+	s.Style = lipglossv1.NewStyle().Foreground(lipglossv1.Color("213"))
 
 	return &App{
 		state:        model.NewAppState(),
@@ -175,12 +176,6 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.state.Width = msg.Width
 		a.state.Height = msg.Height
-
-	case SearchDebounceMsg:
-		// Perform the search after debounce
-		if a.search != nil {
-			a.search.PerformSearch(msg.Query)
-		}
 
 	case tickMsg:
 		// Clear old status messages (3 seconds)
@@ -421,9 +416,9 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 	case "/":
 		// Enter search mode
-		a.search = NewSearch(a.state.Board)
+		a.search = NewSimpleSearch(a.state.Board)
 		a.state.Mode = model.ModeSearch
-		return a.search.Focus()
+		return a.search.Init()
 
 	case "f":
 		// Enter filter mode
@@ -839,34 +834,24 @@ func (a *App) handleSearchMode(msg tea.KeyMsg) tea.Cmd {
 		return nil
 	}
 
-	key := msg.String()
-
-	switch key {
-	case "esc", "enter", "j", "k", "down", "up", "ctrl+d", "ctrl+u":
-		task, done := a.search.HandleKey(key)
-		if done {
-			a.state.Mode = model.ModeNormal
-			if task != nil {
-				// Navigate to the selected task
-				a.state.CurrentPane = task.Status
-				// Find the task's index in the pane
-				tasks := a.state.Board.TasksByStatus(task.Status)
-				for i, t := range tasks {
-					if t.ID == task.ID {
-						a.state.SelectedIndex = i
-						break
-					}
+	done, task, cmd := a.search.Update(msg)
+	if done {
+		a.state.Mode = model.ModeNormal
+		if task != nil {
+			// Navigate to the selected task
+			a.state.CurrentPane = task.Status
+			tasks := a.state.Board.TasksByStatus(task.Status)
+			for i, t := range tasks {
+				if t.ID == task.ID {
+					a.state.SelectedIndex = i
+					break
 				}
-				a.state.SetStatusMessage(fmt.Sprintf("Found: %s", task.Title))
 			}
-			a.search = nil
-			return nil
+			a.state.SetStatusMessage(fmt.Sprintf("Found: %s", task.Title))
 		}
-		return nil
+		a.search = nil
 	}
-
-	// Pass to search for text input
-	return a.search.Update(msg)
+	return cmd
 }
 
 func (a *App) handleFilterMode(msg tea.KeyMsg) tea.Cmd {
@@ -1224,16 +1209,22 @@ func (a *App) View() string {
 		return a.renderHelpOverlay()
 	}
 
-	// Search mode
+	// Search mode: overlay popup on main view
 	if a.state.Mode == model.ModeSearch && a.search != nil {
-		return a.search.View(a.state.Width, a.state.Height)
+		mainView := a.renderMainView()
+		popup := a.search.View()
+		return overlayDialog(mainView, popup, a.state.Width, a.state.Height)
 	}
 
-	// Text input overlay (when in insert/search mode)
-	if a.state.Mode.IsTextInput() {
+	// Text input overlay (when in insert mode - NOT search)
+	if a.state.Mode == model.ModeInsert || a.state.Mode == model.ModeWelcome {
 		return a.renderWithTextInput("")
 	}
 
+	return a.renderMainView()
+}
+
+func (a *App) renderMainView() string {
 	// Calculate layout heights
 	headerHeight := 1
 	tabsHeight := 1
@@ -1271,13 +1262,13 @@ func (a *App) View() string {
 }
 
 func (a *App) renderHeader() string {
-	title := styles.TitleStyle.Render("tsk")
+	title := styles.TitleStyle().Render("tsk")
 	boardName := ""
 	if a.state.Board != nil {
-		boardName = styles.BoardNameStyle.Render(" │ " + a.state.Board.Name)
+		boardName = styles.BoardNameStyle().Render(" │ " + a.state.Board.Name)
 	}
 
-	helpHint := styles.HelpHintStyle.Render("Press ? for help")
+	helpHint := styles.HelpHintStyle().Render("Press ? for help")
 
 	// Calculate spacing
 	leftPart := title + boardName
@@ -1310,12 +1301,12 @@ func (a *App) renderTabs() string {
 
 func (a *App) renderTaskList(width, height int) string {
 	if a.state.Board == nil {
-		return styles.TaskListStyle.Width(width - 2).Render("No board loaded")
+		return styles.TaskListStyle().Width(width - 2).Render("No board loaded")
 	}
 
 	tasks := a.state.CurrentTasks()
 	if len(tasks) == 0 {
-		return styles.TaskListStyle.Width(width - 2).Render(styles.HelpHintStyle.Render("No tasks - press 'n' to create one"))
+		return styles.TaskListStyle().Width(width - 2).Render(styles.EmptyStateStyle().Render("No tasks • Press 'n' to create"))
 	}
 
 	// Reserve 2 lines for scroll indicators (always present to avoid layout shift)
@@ -1356,7 +1347,7 @@ func (a *App) renderTaskList(width, height int) string {
 
 	// Top scroll indicator (always present)
 	if startIdx > 0 {
-		lines = append(lines, styles.HelpHintStyle.Render(fmt.Sprintf("  ↑ %d more above", startIdx)))
+		lines = append(lines, styles.HelpHintStyle().Render(fmt.Sprintf("  ↑ %d more above", startIdx)))
 	} else {
 		lines = append(lines, "") // Empty line to reserve space
 	}
@@ -1373,18 +1364,12 @@ func (a *App) renderTaskList(width, height int) string {
 			title = title[:maxTitleWidth-3] + "..."
 		}
 
-		// Pad title to fill width
-		padding := ""
-		if len(title) < maxTitleWidth {
-			padding = strings.Repeat(" ", maxTitleWidth-len(title))
-		}
-
 		// Style based on selection
 		var line string
 		if i == a.state.SelectedIndex {
-			line = fmt.Sprintf(" ▶%s %s%s", priority, styles.TaskSelectedStyle.Render(title), padding)
+			line = fmt.Sprintf(" ▶%s %s", priority, styles.TaskSelectedStyle().Render(title))
 		} else {
-			line = fmt.Sprintf("  %s %s%s", priority, styles.TaskNormalStyle.Render(title), padding)
+			line = fmt.Sprintf("  %s %s", priority, styles.TaskNormalStyle().Render(title))
 		}
 
 		lines = append(lines, line)
@@ -1392,30 +1377,30 @@ func (a *App) renderTaskList(width, height int) string {
 
 	// Bottom scroll indicator (always present)
 	if endIdx < len(tasks) {
-		lines = append(lines, styles.HelpHintStyle.Render(fmt.Sprintf("  ↓ %d more below", len(tasks)-endIdx)))
+		lines = append(lines, styles.HelpHintStyle().Render(fmt.Sprintf("  ↓ %d more below", len(tasks)-endIdx)))
 	} else {
 		lines = append(lines, "") // Empty line to reserve space
 	}
 
 	content := strings.Join(lines, "\n")
-	return styles.TaskListStyle.Width(width - 2).Render(content)
+	return styles.TaskListStyle().Width(width - 2).Render(content)
 }
 
 func (a *App) renderPreview(width, height int) string {
 	task := a.state.SelectedTask()
 	if task == nil {
-		return styles.PreviewStyle.Width(width - 2).Height(height - 2).Render(styles.HelpHintStyle.Render("Select a task to preview"))
+		return styles.PreviewStyle().Width(width - 2).Height(height - 2).Render(styles.HelpHintStyle().Render("Select a task to preview"))
 	}
 
 	var lines []string
 
-	lines = append(lines, styles.PreviewTitleStyle.Render(task.Title))
+	lines = append(lines, styles.PreviewTitleStyle().Render(task.Title))
 	lines = append(lines, "")
-	lines = append(lines, styles.PreviewLabelStyle.Render("Status: ")+styles.StatusStyle(task.Status).Render(task.Status.String()))
-	lines = append(lines, styles.PreviewLabelStyle.Render("Priority: ")+styles.PriorityStyle(task.Priority).Render(task.Priority.String()))
+	lines = append(lines, styles.PreviewLabelStyle().Render("Status: ")+styles.StatusStyle(task.Status).Render(task.Status.String()))
+	lines = append(lines, styles.PreviewLabelStyle().Render("Priority: ")+styles.PriorityStyle(task.Priority).Render(task.Priority.String()))
 
 	if task.DueDate != nil {
-		lines = append(lines, styles.PreviewLabelStyle.Render("Due: ")+styles.PreviewValueStyle.Render(task.DueDate.Format("Jan 2, 2006")))
+		lines = append(lines, styles.PreviewLabelStyle().Render("Due: ")+styles.PreviewValueStyle().Render(task.DueDate.Format("Jan 2, 2006")))
 	}
 
 	if len(task.Labels) > 0 && a.state.Board != nil {
@@ -1424,16 +1409,16 @@ func (a *App) renderPreview(width, height int) string {
 			label := a.state.Board.GetLabel(labelName)
 			labelBadges = append(labelBadges, styles.LabelBadge(label.Name, label.Color))
 		}
-		lines = append(lines, styles.PreviewLabelStyle.Render("Labels: ")+strings.Join(labelBadges, " "))
+		lines = append(lines, styles.PreviewLabelStyle().Render("Labels: ")+strings.Join(labelBadges, " "))
 	}
 
 	if task.Description != "" {
 		lines = append(lines, "")
-		lines = append(lines, styles.PreviewValueStyle.Render(task.Description))
+		lines = append(lines, styles.PreviewValueStyle().Render(task.Description))
 	}
 
 	content := strings.Join(lines, "\n")
-	return styles.PreviewStyle.Width(width - 2).Height(height - 2).Render(content)
+	return styles.PreviewStyle().Width(width - 2).Height(height - 2).Render(content)
 }
 
 func (a *App) renderStatusBar() string {
@@ -1456,15 +1441,15 @@ func (a *App) renderStatusBar() string {
 
 	// Add filter indicator
 	if a.state.HasActiveFilters() {
-		line1 = styles.WarningStyle.Render("[FILTERED]") + "  " + line1
+		line1 = styles.WarningStyle().Render("[FILTERED]") + "  " + line1
 	}
 
 	// Add mode indicator
 	switch a.state.Mode {
 	case model.ModeInsert:
-		line1 = styles.ModeInsertStyle.Render("-- INSERT --") + "  " + line1
+		line1 = styles.ModeInsertStyle().Render("-- INSERT --") + "  " + line1
 	case model.ModeSearch:
-		line1 = styles.ModeSearchStyle.Render("-- SEARCH --") + "  " + line1
+		line1 = styles.ModeSearchStyle().Render("-- SEARCH --") + "  " + line1
 	}
 
 	// Line 2: Shortcuts (context-sensitive)
@@ -1475,7 +1460,7 @@ func (a *App) renderStatusBar() string {
 		shortcuts = "j/k:nav  h/l:pane  n:new  d:del  >/<:move  Enter:edit  1-3:priority  b:board"
 	}
 
-	return styles.StatusLine1Style.Render(line1) + "\n" + styles.StatusLine2Style.Render(shortcuts)
+	return styles.StatusLine1Style().Render(line1) + "\n" + styles.StatusLine2Style().Render(shortcuts)
 }
 
 func (a *App) renderHelpOverlay() string {
@@ -1511,7 +1496,7 @@ func (a *App) renderHelpOverlay() string {
 	if editWidth < 50 {
 		editWidth = 50
 	}
-	return styles.ModalStyle.Width(editWidth).Height(a.state.Height - 4).Render(help)
+	return styles.ModalStyle().Width(editWidth).Height(a.state.Height - 4).Render(help)
 }
 
 func (a *App) renderWithTextInput(base string) string {
@@ -1523,15 +1508,15 @@ func (a *App) renderWithTextInput(base string) string {
 		title = "Search"
 	}
 
-	modal := styles.ModalTitleStyle.Render(title) + "\n\n" + a.textInput.View() + "\n\n" +
-		styles.HelpHintStyle.Render("Enter to confirm, Esc to cancel")
+	modal := styles.ModalTitleStyle().Render(title) + "\n\n" + a.textInput.View() + "\n\n" +
+		styles.HelpHintStyle().Render("Enter to confirm, Esc to cancel")
 
 	// Full-screen layout
 	editWidth := a.state.Width - 4
 	if editWidth < 50 {
 		editWidth = 50
 	}
-	return styles.ModalStyle.Width(editWidth).Height(a.state.Height - 4).Render(modal)
+	return styles.ModalStyle().Width(editWidth).Height(a.state.Height - 4).Render(modal)
 }
 
 func (a *App) renderLoadingScreen() string {
@@ -1575,11 +1560,11 @@ func (a *App) renderWelcomeScreen() string {
    Terminal Task Manager
 `
 
-	content := styles.ModalTitleStyle.Render(welcome) + "\n\n" +
-		styles.PreviewLabelStyle.Render("Welcome! Let's create your first board.") + "\n\n" +
-		styles.HelpHintStyle.Render("Board name:") + "\n" +
+	content := styles.ModalTitleStyle().Render(welcome) + "\n\n" +
+		styles.PreviewLabelStyle().Render("Welcome! Let's create your first board.") + "\n\n" +
+		styles.HelpHintStyle().Render("Board name:") + "\n" +
 		a.textInput.View() + "\n\n" +
-		styles.HelpHintStyle.Render("Press Enter to continue (or leave blank for 'My Tasks')")
+		styles.HelpHintStyle().Render("Press Enter to continue (or leave blank for 'My Tasks')")
 
 	// Center the content
 	modalWidth := 60
@@ -1594,7 +1579,7 @@ func (a *App) renderWelcomeScreen() string {
 		paddingY = 0
 	}
 
-	modal := styles.ModalStyle.Width(modalWidth).Render(content)
+	modal := styles.ModalStyle().Width(modalWidth).Render(content)
 
 	// Add vertical and horizontal padding
 	vertPad := strings.Repeat("\n", paddingY)
@@ -1612,4 +1597,30 @@ func truncateString(s string, maxLen int) string {
 		return s[:maxLen]
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// overlayDialog overlays a dialog popup on top of the background content
+// using lipgloss v2's Layer and Canvas compositing
+func overlayDialog(background, dialog string, width, height int) string {
+	// Calculate dialog dimensions
+	dialogWidth := lipgloss.Width(dialog)
+	dialogHeight := lipgloss.Height(dialog)
+
+	// Center the dialog
+	x := (width - dialogWidth) / 2
+	y := (height - dialogHeight) / 2
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+
+	// Create layers
+	bgLayer := lipgloss.NewLayer(background)
+	dialogLayer := lipgloss.NewLayer(dialog).X(x).Y(y).Z(1)
+
+	// Create compositor and render
+	compositor := lipgloss.NewCompositor(bgLayer, dialogLayer)
+	return compositor.Render()
 }

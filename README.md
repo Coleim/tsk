@@ -149,6 +149,31 @@ tsk works out of the box with sensible defaults. Data is auto-saved:
 - Every 5 seconds if there are unsaved changes
 - On quit or board switch
 
+## Themes
+
+tsk supports dark and light themes. Set the `TSK_THEME` environment variable to switch:
+
+```bash
+# Use dark theme (default - Catppuccin-inspired)
+tsk
+
+# Use light theme
+TSK_THEME=light tsk
+
+# Or export for all sessions
+export TSK_THEME=light
+```
+
+### Dark Theme (Default)
+- Background: Deep purple-blue (#1e1e2e)
+- Accent: Lavender (#cba6f7)
+- Optimized for low-light environments
+
+### Light Theme
+- Background: Light gray (#eff1f5)
+- Accent: Purple (#8839ef)
+- Optimized for well-lit environments
+
 ## Development
 
 ### Prerequisites

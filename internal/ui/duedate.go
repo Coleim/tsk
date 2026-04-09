@@ -98,36 +98,36 @@ func (de *DueDateEditor) HasError() bool {
 func (de *DueDateEditor) View(width, height int) string {
 	var lines []string
 
-	lines = append(lines, styles.ModalTitleStyle.Render("Set Due Date"))
+	lines = append(lines, styles.ModalTitleStyle().Render("Set Due Date"))
 	lines = append(lines, "")
 
 	// Current due date
 	if de.Task.DueDate != nil {
 		current := de.Task.DueDate.Format("Monday, January 2, 2006")
-		lines = append(lines, styles.PreviewLabelStyle.Render("Current: ")+styles.PreviewValueStyle.Render(current))
+		lines = append(lines, styles.PreviewLabelStyle().Render("Current: ")+styles.PreviewValueStyle().Render(current))
 		lines = append(lines, "")
 	}
 
 	// Input
-	lines = append(lines, styles.PreviewLabelStyle.Render("New date:"))
+	lines = append(lines, styles.PreviewLabelStyle().Render("New date:"))
 	lines = append(lines, de.input.View())
 
 	// Error or preview
 	if de.err != "" {
-		lines = append(lines, styles.ErrorStyle.Render(de.err))
+		lines = append(lines, styles.ErrorStyle().Render(de.err))
 	} else if de.hasDate {
 		preview := de.parsedDate.Format("Monday, January 2, 2006")
-		lines = append(lines, styles.SuccessStyle.Render("✓ "+preview))
+		lines = append(lines, styles.SuccessStyle().Render("✓ "+preview))
 	}
 
 	lines = append(lines, "")
 
 	// Quick options
-	lines = append(lines, styles.HelpHintStyle.Render("Quick set:"))
-	lines = append(lines, styles.StatusLine2Style.Render("  today / tomorrow / next week / clear"))
+	lines = append(lines, styles.HelpHintStyle().Render("Quick set:"))
+	lines = append(lines, styles.StatusLine2Style().Render("  today / tomorrow / next week / clear"))
 	lines = append(lines, "")
 
-	lines = append(lines, styles.HelpHintStyle.Render("Enter: save  Esc: cancel  Backspace: clear all"))
+	lines = append(lines, styles.HelpHintStyle().Render("Enter: save  Esc: cancel  Backspace: clear all"))
 
 	content := strings.Join(lines, "\n")
 
@@ -137,7 +137,7 @@ func (de *DueDateEditor) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }

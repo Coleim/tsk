@@ -1,173 +1,389 @@
 package styles
 
 import (
-	"github.com/charmbracelet/lipgloss"
+	"image/color"
+	"os"
+
+	"charm.land/lipgloss/v2"
 	"github.com/coliva/tsk/internal/model"
 )
 
-// Colors - Enhanced palette for better visual distinction
+// Theme defines the color palette for the application
+type Theme struct {
+	// Backgrounds
+	Background color.Color
+	Surface    color.Color
+	Elevated   color.Color
+
+	// Text
+	TextPrimary   color.Color
+	TextSecondary color.Color
+	TextMuted     color.Color
+
+	// Semantic
+	Accent  color.Color
+	Success color.Color
+	Warning color.Color
+	Error   color.Color
+
+	// Border
+	Border      color.Color
+	BorderLight color.Color
+
+	// Status
+	StatusToDo       color.Color
+	StatusInProgress color.Color
+	StatusDone       color.Color
+
+	// Priority
+	PriorityHigh   color.Color
+	PriorityMedium color.Color
+	PriorityLow    color.Color
+	PriorityNone   color.Color
+
+	// Labels
+	LabelRed    color.Color
+	LabelOrange color.Color
+	LabelYellow color.Color
+	LabelGreen  color.Color
+	LabelBlue   color.Color
+	LabelPurple color.Color
+	LabelPink   color.Color
+	LabelCyan   color.Color
+}
+
+// DarkTheme - Catppuccin-inspired dark theme
+var DarkTheme = Theme{
+	// Backgrounds
+	Background: lipgloss.Color("#1e1e2e"),
+	Surface:    lipgloss.Color("#313244"),
+	Elevated:   lipgloss.Color("#45475a"),
+
+	// Text
+	TextPrimary:   lipgloss.Color("#cdd6f4"),
+	TextSecondary: lipgloss.Color("#a6adc8"),
+	TextMuted:     lipgloss.Color("#6c7086"),
+
+	// Semantic
+	Accent:  lipgloss.Color("#cba6f7"),
+	Success: lipgloss.Color("#a6e3a1"),
+	Warning: lipgloss.Color("#f9e2af"),
+	Error:   lipgloss.Color("#f38ba8"),
+
+	// Border
+	Border:      lipgloss.Color("#89b4fa"),
+	BorderLight: lipgloss.Color("#585b70"),
+
+	// Status
+	StatusToDo:       lipgloss.Color("#89b4fa"),
+	StatusInProgress: lipgloss.Color("#f9e2af"),
+	StatusDone:       lipgloss.Color("#a6e3a1"),
+
+	// Priority
+	PriorityHigh:   lipgloss.Color("#f38ba8"),
+	PriorityMedium: lipgloss.Color("#fab387"),
+	PriorityLow:    lipgloss.Color("#6c7086"),
+	PriorityNone:   lipgloss.Color("#585b70"),
+
+	// Labels
+	LabelRed:    lipgloss.Color("#f38ba8"),
+	LabelOrange: lipgloss.Color("#fab387"),
+	LabelYellow: lipgloss.Color("#f9e2af"),
+	LabelGreen:  lipgloss.Color("#a6e3a1"),
+	LabelBlue:   lipgloss.Color("#89b4fa"),
+	LabelPurple: lipgloss.Color("#cba6f7"),
+	LabelPink:   lipgloss.Color("#f5c2e7"),
+	LabelCyan:   lipgloss.Color("#94e2d5"),
+}
+
+// LightTheme - Light mode colors
+var LightTheme = Theme{
+	// Backgrounds
+	Background: lipgloss.Color("#eff1f5"),
+	Surface:    lipgloss.Color("#e6e9ef"),
+	Elevated:   lipgloss.Color("#dce0e8"),
+
+	// Text
+	TextPrimary:   lipgloss.Color("#4c4f69"),
+	TextSecondary: lipgloss.Color("#6c6f85"),
+	TextMuted:     lipgloss.Color("#9ca0b0"),
+
+	// Semantic
+	Accent:  lipgloss.Color("#8839ef"),
+	Success: lipgloss.Color("#40a02b"),
+	Warning: lipgloss.Color("#df8e1d"),
+	Error:   lipgloss.Color("#d20f39"),
+
+	// Border
+	Border:      lipgloss.Color("#1e66f5"),
+	BorderLight: lipgloss.Color("#bcc0cc"),
+
+	// Status
+	StatusToDo:       lipgloss.Color("#1e66f5"),
+	StatusInProgress: lipgloss.Color("#df8e1d"),
+	StatusDone:       lipgloss.Color("#40a02b"),
+
+	// Priority
+	PriorityHigh:   lipgloss.Color("#d20f39"),
+	PriorityMedium: lipgloss.Color("#fe640b"),
+	PriorityLow:    lipgloss.Color("#9ca0b0"),
+	PriorityNone:   lipgloss.Color("#bcc0cc"),
+
+	// Labels
+	LabelRed:    lipgloss.Color("#d20f39"),
+	LabelOrange: lipgloss.Color("#fe640b"),
+	LabelYellow: lipgloss.Color("#df8e1d"),
+	LabelGreen:  lipgloss.Color("#40a02b"),
+	LabelBlue:   lipgloss.Color("#1e66f5"),
+	LabelPurple: lipgloss.Color("#8839ef"),
+	LabelPink:   lipgloss.Color("#ea76cb"),
+	LabelCyan:   lipgloss.Color("#179299"),
+}
+
+// CurrentTheme holds the active theme
+var CurrentTheme = &DarkTheme
+
+// InitTheme initializes the theme based on TSK_THEME environment variable
+func InitTheme() {
+	theme := os.Getenv("TSK_THEME")
+	switch theme {
+	case "light":
+		CurrentTheme = &LightTheme
+	default:
+		CurrentTheme = &DarkTheme
+	}
+}
+
+// Legacy color variables for backward compatibility (will reference current theme)
 var (
-	// Primary colors
-	ColorPrimary    = lipgloss.Color("39")  // Bright blue
-	ColorSecondary  = lipgloss.Color("245") // Medium gray
-	ColorAccent     = lipgloss.Color("213") // Bright magenta/pink
-	ColorSuccess    = lipgloss.Color("48")  // Bright green
-	ColorWarning    = lipgloss.Color("220") // Bright yellow
-	ColorError      = lipgloss.Color("196") // Bright red
-	ColorMuted      = lipgloss.Color("243") // Muted gray
-	ColorBackground = lipgloss.Color("236") // Dark background
-	ColorBorder     = lipgloss.Color("62")  // Purple/blue border
+	ColorPrimary    = lipgloss.Color("39")
+	ColorSecondary  = lipgloss.Color("245")
+	ColorAccent     = lipgloss.Color("213")
+	ColorSuccess    = lipgloss.Color("48")
+	ColorWarning    = lipgloss.Color("220")
+	ColorError      = lipgloss.Color("196")
+	ColorMuted      = lipgloss.Color("243")
+	ColorBackground = lipgloss.Color("236")
+	ColorBorder     = lipgloss.Color("62")
 
-	// Status-specific colors
-	ColorToDo       = lipgloss.Color("75")  // Light blue
-	ColorInProgress = lipgloss.Color("220") // Yellow/amber
-	ColorDone       = lipgloss.Color("48")  // Green
+	ColorToDo       = lipgloss.Color("75")
+	ColorInProgress = lipgloss.Color("220")
+	ColorDone       = lipgloss.Color("48")
 
-	// Priority colors
-	ColorPriorityHigh   = lipgloss.Color("196") // Red
-	ColorPriorityMedium = lipgloss.Color("214") // Orange
-	ColorPriorityLow    = lipgloss.Color("244") // Gray
-	ColorPriorityNone   = lipgloss.Color("245") // Gray
+	ColorPriorityHigh   = lipgloss.Color("196")
+	ColorPriorityMedium = lipgloss.Color("214")
+	ColorPriorityLow    = lipgloss.Color("244")
+	ColorPriorityNone   = lipgloss.Color("245")
 
-	// Label colors
-	ColorLabelRed    = lipgloss.Color("196") // Red
-	ColorLabelOrange = lipgloss.Color("214") // Orange
-	ColorLabelYellow = lipgloss.Color("226") // Yellow
-	ColorLabelGreen  = lipgloss.Color("48")  // Green
-	ColorLabelBlue   = lipgloss.Color("39")  // Blue
-	ColorLabelPurple = lipgloss.Color("135") // Purple
-	ColorLabelPink   = lipgloss.Color("213") // Pink
-	ColorLabelCyan   = lipgloss.Color("51")  // Cyan
+	ColorLabelRed    = lipgloss.Color("196")
+	ColorLabelOrange = lipgloss.Color("214")
+	ColorLabelYellow = lipgloss.Color("226")
+	ColorLabelGreen  = lipgloss.Color("48")
+	ColorLabelBlue   = lipgloss.Color("39")
+	ColorLabelPurple = lipgloss.Color("135")
+	ColorLabelPink   = lipgloss.Color("213")
+	ColorLabelCyan   = lipgloss.Color("51")
 )
 
-// Base styles
-var (
-	// App title
-	TitleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(ColorAccent)
+// Style getter functions using current theme
 
-	// Board name
-	BoardNameStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("255"))
+// TitleStyle returns the app title style
+func TitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent)
+}
 
-	// Help hint in header
-	HelpHintStyle = lipgloss.NewStyle().
-			Foreground(ColorMuted)
+// BoardNameStyle returns the board name style
+func BoardNameStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.TextPrimary)
+}
 
-	// Selected tab
-	TabActiveStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("255")).
-			Background(ColorBackground).
-			Padding(0, 1)
+// HelpHintStyle returns the help hint style
+func HelpHintStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
 
-	// Inactive tab
-	TabInactiveStyle = lipgloss.NewStyle().
-				Foreground(ColorSecondary).
-				Padding(0, 1)
+// TabActiveStyle returns the active tab style
+func TabActiveStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.TextPrimary).
+		Background(CurrentTheme.Surface).
+		Padding(0, 1)
+}
 
-	// Task count in tab
-	TabCountStyle = lipgloss.NewStyle().
-			Foreground(ColorMuted)
+// TabInactiveStyle returns the inactive tab style
+func TabInactiveStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted).
+		Padding(0, 1)
+}
 
-	// Selected task
-	TaskSelectedStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.Color("255"))
+// TabCountStyle returns the tab count style
+func TabCountStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
 
-	// Unselected task
-	TaskNormalStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("252"))
+// TaskSelectedStyle returns the selected task style
+func TaskSelectedStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent)
+}
 
-	// Task list panel
-	TaskListStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorBorder).
-			Padding(0, 1)
+// TaskNormalStyle returns the normal task style
+func TaskNormalStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextSecondary)
+}
 
-	// Preview panel
-	PreviewStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorBorder).
-			Padding(1, 2)
+// TaskListStyle returns the task list panel style
+func TaskListStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(CurrentTheme.BorderLight).
+		Padding(0, 1)
+}
 
-	// Preview title
-	PreviewTitleStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.Color("255"))
+// PreviewStyle returns the preview panel style
+func PreviewStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(CurrentTheme.BorderLight).
+		Padding(1, 2)
+}
 
-	// Preview field label
-	PreviewLabelStyle = lipgloss.NewStyle().
-				Foreground(ColorMuted)
+// PreviewTitleStyle returns the preview title style
+func PreviewTitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.TextPrimary)
+}
 
-	// Preview field value
-	PreviewValueStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("252"))
+// PreviewLabelStyle returns the preview label style
+func PreviewLabelStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
 
-	// Status bar line 1 (context/feedback)
-	StatusLine1Style = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("252"))
+// PreviewValueStyle returns the preview value style
+func PreviewValueStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextSecondary)
+}
 
-	// Status bar line 2 (shortcuts)
-	StatusLine2Style = lipgloss.NewStyle().
-				Foreground(ColorMuted)
+// StatusLine1Style returns the status bar line 1 style
+func StatusLine1Style() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextSecondary)
+}
 
-	// Mode indicator
-	ModeInsertStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(ColorSuccess)
+// StatusLine2Style returns the status bar line 2 style
+func StatusLine2Style() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
 
-	ModeSearchStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(ColorPrimary)
+// StatusBarStyle returns the status bar container style
+func StatusBarStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		BorderTop(true).
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(CurrentTheme.BorderLight).
+		Background(CurrentTheme.Surface)
+}
 
-	// Modal overlay
-	ModalStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorAccent).
-			Padding(1, 2)
+// ModeInsertStyle returns the insert mode indicator style
+func ModeInsertStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Success)
+}
 
-	// Modal title
-	ModalTitleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(ColorAccent)
+// ModeSearchStyle returns the search mode indicator style
+func ModeSearchStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.StatusToDo)
+}
 
-	// Label tag
-	LabelStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary).
-			Background(ColorBackground).
-			Padding(0, 1)
+// ModalStyle returns the modal overlay style
+func ModalStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(CurrentTheme.Accent).
+		Background(CurrentTheme.Elevated).
+		Padding(1, 2)
+}
 
-	// Error message
-	ErrorStyle = lipgloss.NewStyle().
-			Foreground(ColorError)
+// ModalTitleStyle returns the modal title style
+func ModalTitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent)
+}
 
-	// Success message
-	SuccessStyle = lipgloss.NewStyle().
-			Foreground(ColorSuccess)
+// LabelStyle returns the label tag style
+func LabelStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Accent).
+		Background(CurrentTheme.Surface).
+		Padding(0, 1)
+}
 
-	// Warning message
-	WarningStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(ColorWarning)
-)
+// ErrorStyle returns the error message style
+func ErrorStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Error)
+}
+
+// SuccessStyle returns the success message style
+func SuccessStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Success)
+}
+
+// WarningStyle returns the warning message style
+func WarningStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Warning)
+}
+
+// EmptyStateStyle returns the empty state style
+func EmptyStateStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted).
+		Italic(true)
+}
+
+// PanelTitleStyle returns the panel title style
+func PanelTitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent).
+		MarginBottom(1)
+}
 
 // PriorityStyle returns the style for a priority level
 func PriorityStyle(p model.Priority) lipgloss.Style {
-	var color lipgloss.Color
+	var c color.Color
 	switch p {
 	case model.PriorityHigh:
-		color = ColorPriorityHigh
+		c = CurrentTheme.PriorityHigh
 	case model.PriorityMedium:
-		color = ColorPriorityMedium
+		c = CurrentTheme.PriorityMedium
 	case model.PriorityLow:
-		color = ColorPriorityLow
+		c = CurrentTheme.PriorityLow
 	default:
-		color = ColorPriorityNone
+		c = CurrentTheme.PriorityNone
 	}
-	return lipgloss.NewStyle().Foreground(color)
+	return lipgloss.NewStyle().Foreground(c)
 }
 
 // PriorityIndicator returns a styled priority symbol
@@ -175,33 +391,47 @@ func PriorityIndicator(p model.Priority) string {
 	return PriorityStyle(p).Render(p.Symbol())
 }
 
+// PriorityColor returns the color for a priority level
+func PriorityColor(p model.Priority) color.Color {
+	switch p {
+	case model.PriorityHigh:
+		return CurrentTheme.PriorityHigh
+	case model.PriorityMedium:
+		return CurrentTheme.PriorityMedium
+	case model.PriorityLow:
+		return CurrentTheme.PriorityLow
+	default:
+		return CurrentTheme.PriorityNone
+	}
+}
+
 // StatusStyle returns the style for a status
 func StatusStyle(s model.Status) lipgloss.Style {
-	var color lipgloss.Color
+	var c color.Color
 	switch s {
 	case model.StatusToDo:
-		color = ColorToDo
+		c = CurrentTheme.StatusToDo
 	case model.StatusInProgress:
-		color = ColorInProgress
+		c = CurrentTheme.StatusInProgress
 	case model.StatusDone:
-		color = ColorDone
+		c = CurrentTheme.StatusDone
 	default:
-		color = ColorSecondary
+		c = CurrentTheme.TextSecondary
 	}
-	return lipgloss.NewStyle().Foreground(color)
+	return lipgloss.NewStyle().Foreground(c)
 }
 
 // StatusColor returns the color for a status
-func StatusColor(s model.Status) lipgloss.Color {
+func StatusColor(s model.Status) color.Color {
 	switch s {
 	case model.StatusToDo:
-		return ColorToDo
+		return CurrentTheme.StatusToDo
 	case model.StatusInProgress:
-		return ColorInProgress
+		return CurrentTheme.StatusInProgress
 	case model.StatusDone:
-		return ColorDone
+		return CurrentTheme.StatusDone
 	default:
-		return ColorSecondary
+		return CurrentTheme.TextSecondary
 	}
 }
 
@@ -211,36 +441,33 @@ func TabStyleForStatus(s model.Status, active bool) lipgloss.Style {
 	if active {
 		return lipgloss.NewStyle().
 			Bold(true).
-			Foreground(color).
-			Background(ColorBackground).
-			Padding(0, 1)
+			Foreground(color)
 	}
 	return lipgloss.NewStyle().
-		Foreground(ColorSecondary).
-		Padding(0, 1)
+		Foreground(CurrentTheme.TextMuted)
 }
 
-// LabelColor returns the lipgloss color for a label color
-func LabelColor(c model.LabelColor) lipgloss.Color {
+// LabelColor returns the color for a label color
+func LabelColor(c model.LabelColor) color.Color {
 	switch c {
 	case model.LabelColorRed:
-		return ColorLabelRed
+		return CurrentTheme.LabelRed
 	case model.LabelColorOrange:
-		return ColorLabelOrange
+		return CurrentTheme.LabelOrange
 	case model.LabelColorYellow:
-		return ColorLabelYellow
+		return CurrentTheme.LabelYellow
 	case model.LabelColorGreen:
-		return ColorLabelGreen
+		return CurrentTheme.LabelGreen
 	case model.LabelColorBlue:
-		return ColorLabelBlue
+		return CurrentTheme.LabelBlue
 	case model.LabelColorPurple:
-		return ColorLabelPurple
+		return CurrentTheme.LabelPurple
 	case model.LabelColorPink:
-		return ColorLabelPink
+		return CurrentTheme.LabelPink
 	case model.LabelColorCyan:
-		return ColorLabelCyan
+		return CurrentTheme.LabelCyan
 	default:
-		return ColorSecondary
+		return CurrentTheme.TextSecondary
 	}
 }
 
@@ -257,25 +484,59 @@ func LabelBadge(name string, c model.LabelColor) string {
 }
 
 // PopupStyle returns the style for popup overlays
-var PopupStyle = lipgloss.NewStyle().
-	Border(lipgloss.RoundedBorder()).
-	BorderForeground(ColorAccent).
-	Padding(0, 1).
-	MarginLeft(2)
+func PopupStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(CurrentTheme.Accent).
+		Background(CurrentTheme.Elevated).
+		Padding(0, 1).
+		MarginLeft(2)
+}
 
 // PopupTitleStyle returns the style for popup titles
-var PopupTitleStyle = lipgloss.NewStyle().
-	Foreground(ColorAccent).
-	Bold(true).
-	MarginBottom(1)
+func PopupTitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Accent).
+		Bold(true).
+		MarginBottom(1)
+}
 
 // PopupItemStyle returns the style for normal popup items
-var PopupItemStyle = lipgloss.NewStyle().
-	Padding(0, 1)
+func PopupItemStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextSecondary).
+		Padding(0, 1)
+}
 
 // PopupSelectedItemStyle returns the style for selected popup items
-var PopupSelectedItemStyle = lipgloss.NewStyle().
-	Background(ColorAccent).
-	Foreground(lipgloss.Color("#000000")).
-	Bold(true).
-	Padding(0, 1)
+func PopupSelectedItemStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Background(CurrentTheme.Accent).
+		Foreground(CurrentTheme.Background).
+		Bold(true).
+		Padding(0, 1)
+}
+
+// TaskCardStyle returns style for task cards with priority accent
+func TaskCardStyle(selected bool, priority model.Priority) lipgloss.Style {
+	priorityColor := PriorityColor(priority)
+	if selected {
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(CurrentTheme.TextPrimary).
+			Background(CurrentTheme.Elevated).
+			BorderLeft(true).
+			BorderStyle(lipgloss.ThickBorder()).
+			BorderForeground(priorityColor).
+			Padding(0, 1).
+			MarginBottom(1)
+	}
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextSecondary).
+		Background(CurrentTheme.Surface).
+		BorderLeft(true).
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(priorityColor).
+		Padding(0, 1).
+		MarginBottom(1)
+}

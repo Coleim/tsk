@@ -102,7 +102,7 @@ func (m *Modal) View(screenWidth, screenHeight int) string {
 	var content strings.Builder
 
 	// Title
-	content.WriteString(styles.ModalTitleStyle.Render(m.Title))
+	content.WriteString(styles.ModalTitleStyle().Render(m.Title))
 	content.WriteString("\n\n")
 
 	switch m.Type {
@@ -111,21 +111,21 @@ func (m *Modal) View(screenWidth, screenHeight int) string {
 		content.WriteString("\n\n")
 
 		// Confirm/Cancel buttons
-		yes := styles.PreviewLabelStyle.Render("[Y] " + m.ConfirmText)
-		no := styles.HelpHintStyle.Render("[N] " + m.CancelText)
+		yes := styles.PreviewLabelStyle().Render("[Y] " + m.ConfirmText)
+		no := styles.HelpHintStyle().Render("[N] " + m.CancelText)
 		content.WriteString(yes + "    " + no)
 
 	case ModalSelect:
 		for i, opt := range m.Options {
 			if i == m.SelectedIndex {
-				content.WriteString(styles.TaskSelectedStyle.Render(" ▶ " + opt))
+				content.WriteString(styles.TaskSelectedStyle().Render(" ▶ " + opt))
 			} else {
-				content.WriteString(styles.TaskNormalStyle.Render("   " + opt))
+				content.WriteString(styles.TaskNormalStyle().Render("   " + opt))
 			}
 			content.WriteString("\n")
 		}
 		content.WriteString("\n")
-		content.WriteString(styles.HelpHintStyle.Render("j/k to navigate, Enter to select, Esc to cancel"))
+		content.WriteString(styles.HelpHintStyle().Render("j/k to navigate, Enter to select, Esc to cancel"))
 	}
 
 	// Full-screen layout
@@ -134,7 +134,7 @@ func (m *Modal) View(screenWidth, screenHeight int) string {
 		editWidth = 50
 	}
 
-	modalBox := styles.ModalStyle.Width(editWidth).Height(screenHeight - 4).Render(content.String())
+	modalBox := styles.ModalStyle().Width(editWidth).Height(screenHeight - 4).Render(content.String())
 
 	return modalBox
 }

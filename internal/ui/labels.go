@@ -144,12 +144,12 @@ func (le *LabelEditor) hasLabel(label string) bool {
 func (le *LabelEditor) View(width, height int) string {
 	var lines []string
 
-	lines = append(lines, styles.ModalTitleStyle.Render("Manage Labels"))
+	lines = append(lines, styles.ModalTitleStyle().Render("Manage Labels"))
 	lines = append(lines, "")
 
 	// Current labels
 	if len(le.labels) == 0 {
-		lines = append(lines, styles.HelpHintStyle.Render("(No labels)"))
+		lines = append(lines, styles.HelpHintStyle().Render("(No labels)"))
 	} else {
 		for i, labelName := range le.labels {
 			var line string
@@ -161,7 +161,7 @@ func (le *LabelEditor) View(width, height int) string {
 				labelDisplay = labelName
 			}
 			if i == le.selectedIdx {
-				line = styles.TaskSelectedStyle.Render(" ▶ ") + labelDisplay
+				line = styles.TaskSelectedStyle().Render(" ▶ ") + labelDisplay
 			} else {
 				line = "   " + labelDisplay
 			}
@@ -176,15 +176,15 @@ func (le *LabelEditor) View(width, height int) string {
 	if le.selectedIdx == -1 && !le.editing {
 		inputLabel = "▶ Add:"
 	}
-	lines = append(lines, styles.PreviewLabelStyle.Render(inputLabel))
+	lines = append(lines, styles.PreviewLabelStyle().Render(inputLabel))
 	if le.editing {
 		lines = append(lines, le.input.View())
 	} else {
-		lines = append(lines, styles.HelpHintStyle.Render("(press Enter or 'a' to add)"))
+		lines = append(lines, styles.HelpHintStyle().Render("(press Enter or 'a' to add)"))
 	}
 
 	lines = append(lines, "")
-	lines = append(lines, styles.HelpHintStyle.Render("j/k: navigate  Enter: save  d: delete label  Esc: done"))
+	lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Enter: save  d: delete label  Esc: done"))
 
 	content := strings.Join(lines, "\n")
 
@@ -194,7 +194,7 @@ func (le *LabelEditor) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }

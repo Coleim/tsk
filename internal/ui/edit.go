@@ -247,7 +247,7 @@ func (te *TaskEdit) View(width, height int) string {
 	var lines []string
 
 	// Header
-	lines = append(lines, styles.ModalTitleStyle.Render("Edit Task"))
+	lines = append(lines, styles.ModalTitleStyle().Render("Edit Task"))
 	lines = append(lines, "")
 
 	// Title field
@@ -255,7 +255,7 @@ func (te *TaskEdit) View(width, height int) string {
 	if te.activeField == EditFieldTitle {
 		titleLabel = "▶ Title:"
 	}
-	lines = append(lines, styles.PreviewLabelStyle.Render(titleLabel))
+	lines = append(lines, styles.PreviewLabelStyle().Render(titleLabel))
 	lines = append(lines, te.titleInput.View())
 	lines = append(lines, "")
 
@@ -264,7 +264,7 @@ func (te *TaskEdit) View(width, height int) string {
 	if te.activeField == EditFieldDescription {
 		descLabel = "▶ Description:"
 	}
-	lines = append(lines, styles.PreviewLabelStyle.Render(descLabel))
+	lines = append(lines, styles.PreviewLabelStyle().Render(descLabel))
 	lines = append(lines, te.descInput.View())
 	lines = append(lines, "")
 
@@ -273,7 +273,7 @@ func (te *TaskEdit) View(width, height int) string {
 	if te.activeField == EditFieldLabels {
 		labelsLabel = "▶ Labels:"
 	}
-	lines = append(lines, styles.PreviewLabelStyle.Render(labelsLabel))
+	lines = append(lines, styles.PreviewLabelStyle().Render(labelsLabel))
 	lines = append(lines, te.labelInput.View())
 
 	// Show popup or hint based on state
@@ -281,17 +281,17 @@ func (te *TaskEdit) View(width, height int) string {
 		// Render the label popup
 		lines = append(lines, te.renderLabelPopup())
 	} else if te.activeField == EditFieldLabels {
-		lines = append(lines, styles.HelpHintStyle.Render("  (Tab to open label picker)"))
+		lines = append(lines, styles.HelpHintStyle().Render("  (Tab to open label picker)"))
 	}
 	lines = append(lines, "")
 
 	// Help text
 	if te.showLabelPopup {
-		lines = append(lines, styles.HelpHintStyle.Render("Tab: next  Shift+Tab: prev  Enter: select  Esc: close"))
+		lines = append(lines, styles.HelpHintStyle().Render("Tab: next  Shift+Tab: prev  Enter: select  Esc: close"))
 	} else if te.activeField == EditFieldLabels {
-		lines = append(lines, styles.HelpHintStyle.Render("Tab: open labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+		lines = append(lines, styles.HelpHintStyle().Render("Tab: open labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
 	} else {
-		lines = append(lines, styles.HelpHintStyle.Render("Tab: next field  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+		lines = append(lines, styles.HelpHintStyle().Render("Tab: next field  Shift+Tab: prev field  Enter: save  Esc: cancel"))
 	}
 
 	content := strings.Join(lines, "\n")
@@ -302,7 +302,7 @@ func (te *TaskEdit) View(width, height int) string {
 		editWidth = 50
 	}
 
-	box := styles.ModalStyle.Width(editWidth).Height(height - 4).Render(content)
+	box := styles.ModalStyle().Width(editWidth).Height(height - 4).Render(content)
 
 	return box
 }
@@ -320,11 +320,11 @@ func (te *TaskEdit) renderLabelPopup() string {
 
 	labels := te.Board.AllLabels()
 	if len(labels) == 0 {
-		return styles.HelpHintStyle.Render("  (No labels available)")
+		return styles.HelpHintStyle().Render("  (No labels available)")
 	}
 
 	var items []string
-	items = append(items, styles.PopupTitleStyle.Render("Select Label"))
+	items = append(items, styles.PopupTitleStyle().Render("Select Label"))
 
 	for i, labelName := range labels {
 		label := te.Board.GetLabel(labelName)
@@ -332,12 +332,12 @@ func (te *TaskEdit) renderLabelPopup() string {
 
 		if i == te.popupSelectedIdx {
 			// Highlight selected item with background
-			items = append(items, styles.PopupSelectedItemStyle.Render("▶ "+badge))
+			items = append(items, styles.PopupSelectedItemStyle().Render("▶ "+badge))
 		} else {
-			items = append(items, styles.PopupItemStyle.Render("  "+badge))
+			items = append(items, styles.PopupItemStyle().Render("  "+badge))
 		}
 	}
 
 	content := strings.Join(items, "\n")
-	return styles.PopupStyle.Render(content)
+	return styles.PopupStyle().Render(content)
 }
