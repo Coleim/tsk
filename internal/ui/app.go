@@ -1239,7 +1239,7 @@ func (a *App) renderMainView() string {
 	headerHeight := 1
 	tabsHeight := 1
 	statusHeight := 2
-	contentHeight := a.state.Height - headerHeight - tabsHeight - statusHeight - 2 // -2 for newlines
+	contentHeight := a.state.Height - headerHeight - tabsHeight - statusHeight - 1 // -1 for spacing
 	if contentHeight < 1 {
 		contentHeight = 1
 	}
