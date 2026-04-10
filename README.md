@@ -24,8 +24,7 @@ A fast, keyboard-driven terminal task manager with Kanban-style workflow.
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew tap coliva/tsk
-brew install tsk
+brew install coliva/tsk/tsk
 ```
 
 ### Shell Script

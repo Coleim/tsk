@@ -36,6 +36,7 @@ jobs:
       - name: Update Homebrew Formula
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           
@@ -44,7 +45,7 @@ jobs:
           git checkout main
           
           # Get checksums from release
-          curl -sL "https://github.com/${{ github.repository }}/releases/download/${VERSION}/checksums.txt" -o checksums.txt
+          curl -sL "https://github.com/${GH_REPO}/releases/download/${VERSION}/checksums.txt" -o checksums.txt
           
           DARWIN_ARM64_SHA=$(grep "tsk_darwin_arm64.tar.gz" checksums.txt | awk '{print $1}')
           DARWIN_AMD64_SHA=$(grep "tsk_darwin_amd64.tar.gz" checksums.txt | awk '{print $1}')
@@ -54,48 +55,48 @@ jobs:
           # Create Formula directory
           mkdir -p Formula
           
-          # Generate formula (no leading spaces)
-          cat > Formula/tsk.rb << 'FORMULA'
-class Tsk < Formula
-  desc "Terminal task manager with TUI"
-  homepage "https://github.com/coliva/tsk"
-FORMULA
+          # Generate formula
+          cat > Formula/tsk.rb << EOF
+          class Tsk < Formula
+            desc "Terminal task manager with TUI"
+            homepage "https://github.com/${GH_REPO}"
+            version "${VERSION#v}"
+            license "MIT"
+
+            on_macos do
+              on_intel do
+                url "https://github.com/${GH_REPO}/releases/download/${VERSION}/tsk_darwin_amd64.tar.gz"
+                sha256 "${DARWIN_AMD64_SHA}"
+              end
+              on_arm do
+                url "https://github.com/${GH_REPO}/releases/download/${VERSION}/tsk_darwin_arm64.tar.gz"
+                sha256 "${DARWIN_ARM64_SHA}"
+              end
+            end
+
+            on_linux do
+              on_intel do
+                url "https://github.com/${GH_REPO}/releases/download/${VERSION}/tsk_linux_amd64.tar.gz"
+                sha256 "${LINUX_AMD64_SHA}"
+              end
+              on_arm do
+                url "https://github.com/${GH_REPO}/releases/download/${VERSION}/tsk_linux_arm64.tar.gz"
+                sha256 "${LINUX_ARM64_SHA}"
+              end
+            end
+
+            def install
+              bin.install "tsk"
+            end
+
+            test do
+              system "\#{bin}/tsk", "--version"
+            end
+          end
+          EOF
           
-          cat >> Formula/tsk.rb << EOF
-  version "${VERSION#v}"
-  license "MIT"
-
-  on_macos do
-    on_intel do
-      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_darwin_amd64.tar.gz"
-      sha256 "${DARWIN_AMD64_SHA}"
-    end
-    on_arm do
-      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_darwin_arm64.tar.gz"
-      sha256 "${DARWIN_ARM64_SHA}"
-    end
-  end
-
-  on_linux do
-    on_intel do
-      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_linux_amd64.tar.gz"
-      sha256 "${LINUX_AMD64_SHA}"
-    end
-    on_arm do
-      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_linux_arm64.tar.gz"
-      sha256 "${LINUX_ARM64_SHA}"
-    end
-  end
-
-  def install
-    bin.install "tsk"
-  end
-
-  test do
-    system "#{bin}/tsk", "--version"
-  end
-end
-EOF
+          # Fix indentation (remove leading spaces from heredoc)
+          sed -i 's/^          //' Formula/tsk.rb
           
           # Clean up
           rm -f checksums.txt
