@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="tsk - A fast, keyboard-driven terminal task manager with Kanban-style workflow">
+  <meta name="theme-color" content="#0d1117">
+  <title>tsk - Terminal Task Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">&gt; <span>tsk</span></a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#screenshots">Screenshots</a></li>
+        <li><a href="https://github.com/Coleim/tsk">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>&gt; <span>tsk</span></h1>
+      <p class="tagline">A keyboard-driven task manager for people who live in the terminal.</p>
+      <div class="cta-buttons">
+        <a href="#install" class="btn btn-primary">
+          <span>↓</span> Install Now
+        </a>
+        <a href="https://github.com/Coleim/tsk" class="btn btn-secondary">
+          <span>★</span> View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features">
+    <div class="container">
+      <h2>Why <span>tsk</span>?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-columns"></i></div>
+          <h3>Kanban Workflow</h3>
+          <p>Three panes (To Do, In Progress, Done) for visual task tracking. Move tasks between stages with a single keystroke.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-keyboard"></i></div>
+          <h3>Vim-Style Navigation</h3>
+          <p>Navigate with h/j/k/l keys. No mouse required. Blazingly fast keyboard-driven workflow.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-folder-tree"></i></div>
+          <h3>Multiple Boards</h3>
+          <p>Create separate boards for different projects. Switch between them instantly with b key.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-bullseye"></i></div>
+          <h3>Priorities & Labels</h3>
+          <p>Set High/Medium/Low priority with 1/2/3 keys. Tag tasks with custom labels for filtering.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <h3>Due Dates</h3>
+          <p>Track deadlines with due date support. Quick-set with keywords like "tomorrow" or "next week".</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fa-solid fa-rotate-left"></i></div>
+          <h3>Undo/Redo</h3>
+          <p>Made a mistake? Press u to undo. Full history support so you never lose work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Section -->
+  <section id="install" class="install-section">
+    <div class="container">
+      <h2>Get <span>Started</span></h2>
+      <div class="install-tabs">
+        <button class="install-tab active" onclick="showInstall('homebrew')">Homebrew</button>
+        <button class="install-tab" onclick="showInstall('script')">Shell Script</button>
+        <button class="install-tab" onclick="showInstall('go')">Go Install</button>
+        <button class="install-tab" onclick="showInstall('source')">From Source</button>
+      </div>
+      <div class="install-content">
+        <div id="homebrew" class="install-method active">
+          <div class="code-block">
+            <code><span class="comment"># Add the tap and install</span><br>
+brew tap Coleim/tsk https://github.com/Coleim/tsk.git<br>
+brew install tsk</code>
+          </div>
+        </div>
+        <div id="script" class="install-method">
+          <div class="code-block">
+            <code><span class="comment"># One-line install</span><br>
+curl -sSL https://raw.githubusercontent.com/Coleim/tsk/main/install.sh | bash</code>
+          </div>
+        </div>
+        <div id="go" class="install-method">
+          <div class="code-block">
+            <code><span class="comment"># Requires Go 1.21+</span><br>
+go install github.com/coliva/tsk/cmd/tsk@latest</code>
+          </div>
+        </div>
+        <div id="source" class="install-method">
+          <div class="code-block">
+            <code><span class="comment"># Clone and build</span><br>
+git clone https://github.com/Coleim/tsk.git<br>
+cd tsk<br>
+make build<br>
+sudo mv bin/tsk /usr/local/bin/</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Section -->
+  <section id="screenshots">
+    <div class="container">
+      <h2>See It in <span>Action</span></h2>
+      <div class="screenshots-grid">
+        <div class="screenshot">
+          <img src="assets/screenshot_01.png" alt="tsk main view with tasks">
+        </div>
+        <div class="screenshot">
+          <img src="assets/screenshot_02.png" alt="tsk task editing">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>Built with ❤️ using <a href="https://github.com/openspec-dev/openspec">OpenSpec</a> — an experimental AI-assisted development framework.</p>
+      <div class="links">
+        <a href="https://github.com/Coleim/tsk">GitHub</a>
+        <a href="https://github.com/Coleim/tsk/issues">Issues</a>
+        <a href="https://github.com/Coleim/tsk/blob/main/LICENSE">MIT License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function showInstall(method) {
+      // Hide all methods
+      document.querySelectorAll('.install-method').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.install-tab').forEach(el => el.classList.remove('active'));
+      
+      // Show selected
+      document.getElementById(method).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

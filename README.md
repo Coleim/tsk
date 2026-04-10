@@ -7,6 +7,8 @@ A fast, keyboard-driven terminal task manager with Kanban-style workflow. Built 
 ![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
+📖 **[Website](https://coleim.github.io/tsk)** • **[GitHub](https://github.com/Coleim/tsk)**
+
 ## Overview
 
 **tsk** is a terminal-based task manager that brings Kanban-style workflow to your command line. No browser, no electron, no bloat — just a fast TUI that stays out of your way.
