@@ -55,7 +55,7 @@ changelog:
 
 release:
   github:
-    owner: coliva
+    owner: Coleim
     name: tsk
   draft: false
   prerelease: auto

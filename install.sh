@@ -1,11 +1,11 @@
 #!/bin/sh
 # tsk installer script
-# Usage: curl -sSL https://raw.githubusercontent.com/coliva/tsk/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/Coleim/tsk/main/install.sh | bash
 #    or: curl -sSL ... | bash -s -- v1.2.3   (specific version)
 
 set -e
 
-REPO="coliva/tsk"
+REPO="Coleim/tsk"
 BINARY_NAME="tsk"
 GITHUB_API="https://api.github.com/repos/${REPO}/releases"
 
