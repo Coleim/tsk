@@ -520,6 +520,13 @@ func (a *App) handleTextInputMode(msg tea.KeyMsg) tea.Cmd {
 		a.textInput.Blur()
 		return nil
 
+	case "ctrl+c":
+		// Allow quitting from welcome screen
+		if a.state.Mode == model.ModeWelcome {
+			return tea.Quit
+		}
+		return nil
+
 	case "enter":
 		value := strings.TrimSpace(a.textInput.Value())
 
@@ -1778,9 +1785,9 @@ func (a *App) renderWelcomeScreen() string {
 
 	content := styles.ModalTitleStyle().Render(welcome) + "\n\n" +
 		styles.PreviewLabelStyle().Render("Welcome! Let's create your first board.") + "\n\n" +
-		styles.HelpHintStyle().Render("Board name:") + "\n" +
+		styles.HelpHintStyle().Render("Board name (leave blank for 'My Tasks'):") + "\n" +
 		a.textInput.View() + "\n\n" +
-		styles.HelpHintStyle().Render("Press Enter to continue (or leave blank for 'My Tasks')")
+		styles.HelpHintStyle().Render("Enter to continue • Ctrl+C to quit")
 
 	// Set modal width
 	modalWidth := 60
