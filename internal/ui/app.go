@@ -66,6 +66,9 @@ type App struct {
 	// Filter component
 	filter *Filter
 
+	// Sort selector component
+	sortSelector *SortSelector
+
 	// Auto-save ticker
 	lastAutoSave time.Time
 
@@ -245,6 +248,11 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return a.handleFilterMode(msg)
 	}
 
+	// Handle sort mode
+	if a.state.Mode == model.ModeSort {
+		return a.handleSortMode(msg)
+	}
+
 	// Handle mode-specific input
 	if a.state.Mode.IsTextInput() {
 		return a.handleTextInputMode(msg)
@@ -395,11 +403,10 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return a.boardSelector.SetMode(BoardModeCreate)
 
 	case "s":
-		// Sort by priority
+		// Open sort selector
 		if a.state.Board != nil {
-			a.state.Board.SortByPriority(a.state.CurrentPane)
-			a.state.MarkDirty()
-			a.state.SetStatusMessage("Sorted by priority")
+			a.sortSelector = NewSortSelector(a.state.SortMode)
+			a.state.Mode = model.ModeSort
 		}
 
 	case "u":
@@ -887,6 +894,33 @@ func (a *App) handleFilterMode(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
+func (a *App) handleSortMode(msg tea.KeyMsg) tea.Cmd {
+	if a.sortSelector == nil {
+		a.state.Mode = model.ModeNormal
+		return nil
+	}
+
+	key := msg.String()
+	done, apply := a.sortSelector.HandleKey(key)
+
+	if done {
+		if apply {
+			// Apply sort mode to state and board
+			newMode := a.sortSelector.GetSelectedMode()
+			a.state.SortMode = newMode
+			if a.state.Board != nil {
+				a.state.Board.SortMode = newMode
+				a.state.MarkDirty()
+			}
+			a.state.SetStatusMessage("Sort: " + newMode.String())
+		}
+		a.sortSelector = nil
+		a.state.Mode = model.ModeNormal
+	}
+
+	return nil
+}
+
 func (a *App) handleBoardMode(msg tea.KeyMsg) tea.Cmd {
 	if a.boardSelector == nil {
 		a.state.Mode = model.ModeNormal
@@ -1181,6 +1215,11 @@ func (a *App) View() string {
 	// Filter mode
 	if a.state.Mode == model.ModeFilter && a.filter != nil {
 		return a.filter.View(a.state.Width, a.state.Height)
+	}
+
+	// Sort mode
+	if a.state.Mode == model.ModeSort && a.sortSelector != nil {
+		return a.sortSelector.View(a.state.Width, a.state.Height)
 	}
 
 	// Task edit view
@@ -1529,6 +1568,11 @@ func (a *App) renderStatusBar() string {
 		line1 = styles.WarningStyle().Render("[FILTERED]") + "  " + line1
 	}
 
+	// Add sort indicator (when not default)
+	if a.state.SortMode != model.SortCreatedDesc {
+		line1 = styles.SuccessStyle().Render("[SORT: "+a.state.SortMode.String()+"]") + "  " + line1
+	}
+
 	// Add mode indicator
 	switch a.state.Mode {
 	case model.ModeInsert:
@@ -1569,10 +1613,10 @@ func (a *App) renderHelpOverlay() string {
                                        L          Manage labels               
   SEARCH & FILTER                                                             
   /             Search tasks           OTHER                                  
-  s             Sort by priority       u          Undo                        
-  F             Clear filters          Ctrl+r     Redo                        
-                                       q / :wq    Quit                        
-                                       ?          Toggle this help            
+  f             Filter by priority/    u          Undo                        
+                label (multi-select)   Ctrl+r     Redo                        
+  s             Sort options           q / :wq    Quit                        
+  F             Clear filters          ?          Toggle this help            
 ──────────────────────────────────────────────────────────────────────────────
                             Press ? or Esc to close                           
 `

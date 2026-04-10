@@ -1,8 +1,70 @@
 package model
 
 import (
+	"sort"
+	"strings"
 	"time"
 )
+
+// SortMode represents how tasks are sorted
+type SortMode int
+
+const (
+	// SortCreatedDesc sorts by creation date, newest first (default)
+	SortCreatedDesc SortMode = iota
+	// SortCreatedAsc sorts by creation date, oldest first
+	SortCreatedAsc
+	// SortDueDateAsc sorts by due date, earliest first (nil last)
+	SortDueDateAsc
+	// SortDueDateDesc sorts by due date, latest first (nil first)
+	SortDueDateDesc
+	// SortTitleAsc sorts by title A-Z
+	SortTitleAsc
+	// SortTitleDesc sorts by title Z-A
+	SortTitleDesc
+	// SortPriorityDesc sorts by priority, high first
+	SortPriorityDesc
+	// SortPriorityAsc sorts by priority, low first
+	SortPriorityAsc
+)
+
+// String returns the display name for a sort mode
+func (m SortMode) String() string {
+	switch m {
+	case SortCreatedDesc:
+		return "Newest First"
+	case SortCreatedAsc:
+		return "Oldest First"
+	case SortDueDateAsc:
+		return "Due Date (Earliest)"
+	case SortDueDateDesc:
+		return "Due Date (Latest)"
+	case SortTitleAsc:
+		return "Title A-Z"
+	case SortTitleDesc:
+		return "Title Z-A"
+	case SortPriorityDesc:
+		return "Priority (High First)"
+	case SortPriorityAsc:
+		return "Priority (Low First)"
+	default:
+		return "Newest First"
+	}
+}
+
+// AllSortModes returns all available sort modes in display order
+func AllSortModes() []SortMode {
+	return []SortMode{
+		SortCreatedDesc,
+		SortCreatedAsc,
+		SortDueDateAsc,
+		SortDueDateDesc,
+		SortTitleAsc,
+		SortTitleDesc,
+		SortPriorityDesc,
+		SortPriorityAsc,
+	}
+}
 
 // AppState holds the complete application state
 type AppState struct {
@@ -52,6 +114,9 @@ type AppState struct {
 
 	// Scroll offset for task list
 	ScrollOffset int
+
+	// Current sort mode
+	SortMode SortMode
 }
 
 // NewAppState creates a new application state
@@ -62,6 +127,7 @@ func NewAppState() *AppState {
 		Mode:          ModeNormal,
 		Dirty:         false,
 		FilterLabels:  []string{},
+		SortMode:      SortCreatedDesc, // Default: newest first
 	}
 }
 
@@ -72,9 +138,13 @@ func (s *AppState) SetBoard(board *Board) {
 	s.SelectedIndex = 0
 	s.ScrollOffset = 0
 	s.ClearSearch()
+	// Load board's sort mode preference
+	if board != nil {
+		s.SortMode = board.SortMode
+	}
 }
 
-// CurrentTasks returns tasks in the current pane, applying any active filters
+// CurrentTasks returns tasks in the current pane, applying any active filters and sorting
 func (s *AppState) CurrentTasks() []*Task {
 	if s.Board == nil {
 		return nil
@@ -82,17 +152,84 @@ func (s *AppState) CurrentTasks() []*Task {
 	tasks := s.Board.TasksByStatus(s.CurrentPane)
 
 	// Apply filters if any are active
+	var result []*Task
 	if len(s.FilterPriorities) == 0 && len(s.FilterLabels) == 0 {
-		return tasks
-	}
-
-	var filtered []*Task
-	for _, task := range tasks {
-		if s.matchesFilters(task) {
-			filtered = append(filtered, task)
+		// Make a copy to avoid modifying original slice during sorting
+		result = make([]*Task, len(tasks))
+		copy(result, tasks)
+	} else {
+		for _, task := range tasks {
+			if s.matchesFilters(task) {
+				result = append(result, task)
+			}
 		}
 	}
-	return filtered
+
+	// Apply sorting
+	s.sortTasks(result)
+
+	return result
+}
+
+// sortTasks sorts the given slice of tasks according to the current sort mode
+func (s *AppState) sortTasks(tasks []*Task) {
+	if len(tasks) <= 1 {
+		return
+	}
+
+	sort.SliceStable(tasks, func(i, j int) bool {
+		return s.compareTasks(tasks[i], tasks[j])
+	})
+}
+
+// compareTasks returns true if task a should come before task b
+func (s *AppState) compareTasks(a, b *Task) bool {
+	switch s.SortMode {
+	case SortCreatedDesc:
+		return a.CreatedAt.After(b.CreatedAt)
+	case SortCreatedAsc:
+		return a.CreatedAt.Before(b.CreatedAt)
+	case SortDueDateAsc:
+		// nil due dates come last
+		if a.DueDate == nil && b.DueDate == nil {
+			return a.CreatedAt.After(b.CreatedAt) // Secondary sort
+		}
+		if a.DueDate == nil {
+			return false
+		}
+		if b.DueDate == nil {
+			return true
+		}
+		return a.DueDate.Before(*b.DueDate)
+	case SortDueDateDesc:
+		// nil due dates come first
+		if a.DueDate == nil && b.DueDate == nil {
+			return a.CreatedAt.After(b.CreatedAt) // Secondary sort
+		}
+		if a.DueDate == nil {
+			return true
+		}
+		if b.DueDate == nil {
+			return false
+		}
+		return a.DueDate.After(*b.DueDate)
+	case SortTitleAsc:
+		return strings.ToLower(a.Title) < strings.ToLower(b.Title)
+	case SortTitleDesc:
+		return strings.ToLower(a.Title) > strings.ToLower(b.Title)
+	case SortPriorityDesc:
+		if a.Priority != b.Priority {
+			return a.Priority > b.Priority
+		}
+		return a.CreatedAt.After(b.CreatedAt) // Secondary sort
+	case SortPriorityAsc:
+		if a.Priority != b.Priority {
+			return a.Priority < b.Priority
+		}
+		return a.CreatedAt.After(b.CreatedAt) // Secondary sort
+	default:
+		return a.CreatedAt.After(b.CreatedAt)
+	}
 }
 
 // matchesFilters checks if a task matches the current filters

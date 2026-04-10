@@ -40,6 +40,7 @@ type Board struct {
 	Name        string            `json:"name"`
 	Tasks       []*Task           `json:"tasks"`
 	BoardLabels map[string]*Label `json:"board_labels,omitempty"`
+	SortMode    SortMode          `json:"sort_mode,omitempty"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 }
@@ -161,6 +162,8 @@ func (b *Board) ReorderTask(id string, newPosition int) bool {
 }
 
 // SortByPriority sorts tasks within a status by priority (high first)
+// Deprecated: Use AppState.SortMode instead for display-only sorting.
+// This method modifies storage order, while SortMode sorts at display time.
 func (b *Board) SortByPriority(status Status) {
 	tasks := b.TasksByStatus(status)
 	sort.SliceStable(tasks, func(i, j int) bool {

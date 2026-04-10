@@ -26,6 +26,8 @@ const (
 	ModeBoard
 	// ModeFilter is for filtering tasks
 	ModeFilter
+	// ModeSort is for sorting tasks
+	ModeSort
 )
 
 // String returns the display name for the mode
@@ -53,6 +55,8 @@ func (m Mode) String() string {
 		return "BOARD"
 	case ModeFilter:
 		return "FILTER"
+	case ModeSort:
+		return "SORT"
 	default:
 		return ""
 	}

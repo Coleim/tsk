@@ -2,6 +2,7 @@ package model
 
 import (
 	"testing"
+	"time"
 )
 
 func TestSwitchToTaskInPane(t *testing.T) {
@@ -316,5 +317,307 @@ func TestHasActiveFilters(t *testing.T) {
 	state.FilterLabels = nil
 	if state.HasActiveFilters() {
 		t.Error("Expected no active filters after clearing")
+	}
+}
+
+// ============ Sort Mode Tests ============
+
+func TestSortModeString(t *testing.T) {
+	tests := []struct {
+		mode     SortMode
+		expected string
+	}{
+		{SortCreatedDesc, "Newest First"},
+		{SortCreatedAsc, "Oldest First"},
+		{SortDueDateAsc, "Due Date (Earliest)"},
+		{SortDueDateDesc, "Due Date (Latest)"},
+		{SortTitleAsc, "Title A-Z"},
+		{SortTitleDesc, "Title Z-A"},
+		{SortPriorityDesc, "Priority (High First)"},
+		{SortPriorityAsc, "Priority (Low First)"},
+	}
+
+	for _, tt := range tests {
+		if got := tt.mode.String(); got != tt.expected {
+			t.Errorf("SortMode(%d).String() = %q, want %q", tt.mode, got, tt.expected)
+		}
+	}
+}
+
+func TestAllSortModes(t *testing.T) {
+	modes := AllSortModes()
+	if len(modes) != 8 {
+		t.Errorf("Expected 8 sort modes, got %d", len(modes))
+	}
+}
+
+func TestSortByCreatedDate(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	// Create tasks with different creation times
+	task1 := NewTask("older", "Older Task", StatusToDo)
+	task2 := NewTask("newer", "Newer Task", StatusToDo)
+
+	// Set creation times (newer is more recent)
+	task1.CreatedAt = task2.CreatedAt.Add(-time.Hour)
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+
+	state := &AppState{
+		Board:       board,
+		CurrentPane: StatusToDo,
+		SortMode:    SortCreatedDesc,
+	}
+
+	// Test SortCreatedDesc (newest first)
+	tasks := state.CurrentTasks()
+	if len(tasks) != 2 {
+		t.Fatalf("Expected 2 tasks, got %d", len(tasks))
+	}
+	if tasks[0].ID != "newer" {
+		t.Errorf("SortCreatedDesc: Expected newer task first, got %s", tasks[0].ID)
+	}
+
+	// Test SortCreatedAsc (oldest first)
+	state.SortMode = SortCreatedAsc
+	tasks = state.CurrentTasks()
+	if tasks[0].ID != "older" {
+		t.Errorf("SortCreatedAsc: Expected older task first, got %s", tasks[0].ID)
+	}
+}
+
+func TestSortByDueDate(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	// Create tasks with different due dates
+	now := time.Now()
+	tomorrow := now.Add(24 * time.Hour)
+	nextWeek := now.Add(7 * 24 * time.Hour)
+
+	task1 := NewTask("no-due", "No Due Date", StatusToDo)
+	// task1 has no due date (nil)
+
+	task2 := NewTask("next-week", "Next Week", StatusToDo)
+	task2.DueDate = &nextWeek
+
+	task3 := NewTask("tomorrow", "Tomorrow", StatusToDo)
+	task3.DueDate = &tomorrow
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+	board.AddTask(task3)
+
+	state := &AppState{
+		Board:       board,
+		CurrentPane: StatusToDo,
+		SortMode:    SortDueDateAsc,
+	}
+
+	// Test SortDueDateAsc (earliest first, nil last)
+	tasks := state.CurrentTasks()
+	if len(tasks) != 3 {
+		t.Fatalf("Expected 3 tasks, got %d", len(tasks))
+	}
+	if tasks[0].ID != "tomorrow" {
+		t.Errorf("SortDueDateAsc: Expected tomorrow task first, got %s", tasks[0].ID)
+	}
+	if tasks[1].ID != "next-week" {
+		t.Errorf("SortDueDateAsc: Expected next-week task second, got %s", tasks[1].ID)
+	}
+	if tasks[2].ID != "no-due" {
+		t.Errorf("SortDueDateAsc: Expected no-due task last, got %s", tasks[2].ID)
+	}
+
+	// Test SortDueDateDesc (latest first, nil first)
+	state.SortMode = SortDueDateDesc
+	tasks = state.CurrentTasks()
+	if tasks[0].ID != "no-due" {
+		t.Errorf("SortDueDateDesc: Expected no-due task first, got %s", tasks[0].ID)
+	}
+	if tasks[1].ID != "next-week" {
+		t.Errorf("SortDueDateDesc: Expected next-week task second, got %s", tasks[1].ID)
+	}
+	if tasks[2].ID != "tomorrow" {
+		t.Errorf("SortDueDateDesc: Expected tomorrow task last, got %s", tasks[2].ID)
+	}
+}
+
+func TestSortByTitle(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	task1 := NewTask("charlie", "Charlie Task", StatusToDo)
+	task2 := NewTask("alpha", "alpha task", StatusToDo) // lowercase
+	task3 := NewTask("beta", "Beta Task", StatusToDo)
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+	board.AddTask(task3)
+
+	state := &AppState{
+		Board:       board,
+		CurrentPane: StatusToDo,
+		SortMode:    SortTitleAsc,
+	}
+
+	// Test SortTitleAsc (A-Z, case-insensitive)
+	tasks := state.CurrentTasks()
+	if len(tasks) != 3 {
+		t.Fatalf("Expected 3 tasks, got %d", len(tasks))
+	}
+	if tasks[0].ID != "alpha" {
+		t.Errorf("SortTitleAsc: Expected alpha task first, got %s", tasks[0].ID)
+	}
+	if tasks[1].ID != "beta" {
+		t.Errorf("SortTitleAsc: Expected beta task second, got %s", tasks[1].ID)
+	}
+	if tasks[2].ID != "charlie" {
+		t.Errorf("SortTitleAsc: Expected charlie task third, got %s", tasks[2].ID)
+	}
+
+	// Test SortTitleDesc (Z-A)
+	state.SortMode = SortTitleDesc
+	tasks = state.CurrentTasks()
+	if tasks[0].ID != "charlie" {
+		t.Errorf("SortTitleDesc: Expected charlie task first, got %s", tasks[0].ID)
+	}
+	if tasks[2].ID != "alpha" {
+		t.Errorf("SortTitleDesc: Expected alpha task last, got %s", tasks[2].ID)
+	}
+}
+
+func TestSortByPriority(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	task1 := NewTask("low", "Low Priority", StatusToDo)
+	task1.Priority = PriorityLow
+
+	task2 := NewTask("high", "High Priority", StatusToDo)
+	task2.Priority = PriorityHigh
+
+	task3 := NewTask("medium", "Medium Priority", StatusToDo)
+	task3.Priority = PriorityMedium
+
+	task4 := NewTask("none", "No Priority", StatusToDo)
+	task4.Priority = PriorityNone
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+	board.AddTask(task3)
+	board.AddTask(task4)
+
+	state := &AppState{
+		Board:       board,
+		CurrentPane: StatusToDo,
+		SortMode:    SortPriorityDesc,
+	}
+
+	// Test SortPriorityDesc (high first)
+	tasks := state.CurrentTasks()
+	if len(tasks) != 4 {
+		t.Fatalf("Expected 4 tasks, got %d", len(tasks))
+	}
+	if tasks[0].ID != "high" {
+		t.Errorf("SortPriorityDesc: Expected high task first, got %s", tasks[0].ID)
+	}
+	if tasks[1].ID != "medium" {
+		t.Errorf("SortPriorityDesc: Expected medium task second, got %s", tasks[1].ID)
+	}
+	if tasks[2].ID != "low" {
+		t.Errorf("SortPriorityDesc: Expected low task third, got %s", tasks[2].ID)
+	}
+	if tasks[3].ID != "none" {
+		t.Errorf("SortPriorityDesc: Expected none task last, got %s", tasks[3].ID)
+	}
+
+	// Test SortPriorityAsc (low first)
+	state.SortMode = SortPriorityAsc
+	tasks = state.CurrentTasks()
+	if tasks[0].ID != "none" {
+		t.Errorf("SortPriorityAsc: Expected none task first, got %s", tasks[0].ID)
+	}
+	if tasks[3].ID != "high" {
+		t.Errorf("SortPriorityAsc: Expected high task last, got %s", tasks[3].ID)
+	}
+}
+
+func TestSortCombinedWithFilter(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	task1 := NewTask("high-1", "High Priority 1", StatusToDo)
+	task1.Priority = PriorityHigh
+
+	task2 := NewTask("low-1", "Low Priority 1", StatusToDo)
+	task2.Priority = PriorityLow
+
+	task3 := NewTask("high-2", "High Priority 2", StatusToDo)
+	task3.Priority = PriorityHigh
+	// Make high-2 older than high-1
+	task3.CreatedAt = task1.CreatedAt.Add(-time.Hour)
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+	board.AddTask(task3)
+
+	state := &AppState{
+		Board:            board,
+		CurrentPane:      StatusToDo,
+		SortMode:         SortCreatedDesc, // Newest first
+		FilterPriorities: []Priority{PriorityHigh},
+	}
+
+	// Should filter to only high priority tasks, then sort by creation date
+	tasks := state.CurrentTasks()
+	if len(tasks) != 2 {
+		t.Fatalf("Expected 2 high priority tasks, got %d", len(tasks))
+	}
+	// high-1 is newer, should be first
+	if tasks[0].ID != "high-1" {
+		t.Errorf("Expected high-1 (newer) first after filter+sort, got %s", tasks[0].ID)
+	}
+	if tasks[1].ID != "high-2" {
+		t.Errorf("Expected high-2 (older) second after filter+sort, got %s", tasks[1].ID)
+	}
+}
+
+func TestSortDoesNotModifyOriginal(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+
+	task1 := NewTask("b", "B Task", StatusToDo)
+	task2 := NewTask("a", "A Task", StatusToDo)
+
+	board.AddTask(task1)
+	board.AddTask(task2)
+
+	state := &AppState{
+		Board:       board,
+		CurrentPane: StatusToDo,
+		SortMode:    SortTitleAsc,
+	}
+
+	// Get sorted tasks
+	sortedTasks := state.CurrentTasks()
+
+	// Verify sorted order
+	if sortedTasks[0].ID != "a" {
+		t.Errorf("Expected sorted tasks[0] to be 'a', got %s", sortedTasks[0].ID)
+	}
+
+	// Verify original board tasks order is unchanged
+	originalTasks := board.TasksByStatus(StatusToDo)
+	if originalTasks[0].ID != "b" {
+		t.Errorf("Expected original tasks[0] to still be 'b', got %s", originalTasks[0].ID)
+	}
+}
+
+func TestSetBoardLoadsSortMode(t *testing.T) {
+	board := NewBoard("test-board", "Test")
+	board.SortMode = SortTitleAsc
+
+	state := NewAppState()
+	state.SetBoard(board)
+
+	if state.SortMode != SortTitleAsc {
+		t.Errorf("Expected SortMode to be loaded from board, got %v", state.SortMode)
 	}
 }
