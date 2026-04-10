@@ -208,6 +208,24 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+	// Handle stats screen - block all other keys
+	if a.state.ShowStats {
+		switch msg.String() {
+		case "S", "s", "esc", "q":
+			a.state.ShowStats = false
+		}
+		return nil
+	}
+
+	// Handle help screen - block all other keys
+	if a.state.ShowHelp {
+		switch msg.String() {
+		case "?", "esc", "q":
+			a.state.ShowHelp = false
+		}
+		return nil
+	}
+
 	// Handle board mode
 	if a.state.Mode == model.ModeBoard {
 		return a.handleBoardMode(msg)
@@ -273,6 +291,11 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 	case "?":
 		a.state.ShowHelp = !a.state.ShowHelp
+		return nil
+
+	case "S":
+		// Toggle statistics overlay
+		a.state.ShowStats = !a.state.ShowStats
 		return nil
 
 	case "j", "down":
@@ -479,6 +502,7 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 	case "esc":
 		a.state.ShowHelp = false
+		a.state.ShowStats = false
 		a.state.ClearSearch()
 	}
 
@@ -1246,6 +1270,11 @@ func (a *App) View() string {
 		return a.renderHelpOverlay()
 	}
 
+	// Statistics screen (full screen)
+	if a.state.ShowStats {
+		return a.renderStatsScreen()
+	}
+
 	// Search mode: overlay popup on main view
 	if a.state.Mode == model.ModeSearch && a.search != nil {
 		mainView := a.renderMainView()
@@ -1617,6 +1646,7 @@ func (a *App) renderHelpOverlay() string {
                 label (multi-select)   Ctrl+r     Redo                        
   s             Sort options           q / :wq    Quit                        
   F             Clear filters          ?          Toggle this help            
+  S             Statistics             
 ──────────────────────────────────────────────────────────────────────────────
                             Press ? or Esc to close                           
 `
@@ -1626,6 +1656,41 @@ func (a *App) renderHelpOverlay() string {
 		editWidth = 50
 	}
 	return styles.ModalStyle().Width(editWidth).Height(a.state.Height - 4).Render(help)
+}
+
+func (a *App) renderStatsOverlay() string {
+	statsView := NewStatsView(a.state.Board, a.state.Width, a.state.Height)
+	return statsView.View()
+}
+
+// renderStatsScreen renders the statistics as a full screen view
+func (a *App) renderStatsScreen() string {
+	statsView := NewStatsView(a.state.Board, a.state.Width, a.state.Height)
+	content := statsView.View()
+
+	// Center the content on screen
+	contentWidth := lipgloss.Width(content)
+	contentHeight := lipgloss.Height(content)
+
+	x := (a.state.Width - contentWidth) / 2
+	y := (a.state.Height - contentHeight) / 2
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+
+	// Create a blank background
+	bgStyle := lipgloss.NewStyle().Width(a.state.Width).Height(a.state.Height)
+	background := bgStyle.Render("")
+
+	// Layer the content on top
+	bgLayer := lipgloss.NewLayer(background)
+	contentLayer := lipgloss.NewLayer(content).X(x).Y(y).Z(1)
+
+	compositor := lipgloss.NewCompositor(bgLayer, contentLayer)
+	return compositor.Render()
 }
 
 func (a *App) renderWithTextInput(base string) string {
@@ -1768,6 +1833,35 @@ func overlayDialog(background, dialog string, width, height int) string {
 
 	// Create layers
 	bgLayer := lipgloss.NewLayer(background)
+	dialogLayer := lipgloss.NewLayer(dialog).X(x).Y(y).Z(1)
+
+	// Create compositor and render
+	compositor := lipgloss.NewCompositor(bgLayer, dialogLayer)
+	return compositor.Render()
+}
+
+// overlayDialogDimmed overlays a dialog with a dimmed background to indicate focus
+func overlayDialogDimmed(background, dialog string, width, height int) string {
+	// Dim the background by applying faint styling
+	dimStyle := lipgloss.NewStyle().Faint(true)
+	dimmedBg := dimStyle.Render(background)
+
+	// Calculate dialog dimensions
+	dialogWidth := lipgloss.Width(dialog)
+	dialogHeight := lipgloss.Height(dialog)
+
+	// Center the dialog
+	x := (width - dialogWidth) / 2
+	y := (height - dialogHeight) / 2
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+
+	// Create layers
+	bgLayer := lipgloss.NewLayer(dimmedBg)
 	dialogLayer := lipgloss.NewLayer(dialog).X(x).Y(y).Z(1)
 
 	// Create compositor and render

@@ -99,6 +99,9 @@ type AppState struct {
 	// Help overlay visible
 	ShowHelp bool
 
+	// Statistics overlay visible
+	ShowStats bool
+
 	// Modal state (stored as interface{} to avoid circular dependency)
 	ActiveModal interface{}
 

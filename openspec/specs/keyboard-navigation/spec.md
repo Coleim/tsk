@@ -233,3 +233,14 @@ The application SHALL allow archiving completed tasks when in DONE pane.
 - **WHEN** user is in TO DO or IN PROGRESS pane
 - **THEN** 'a' and 'A' keys have no effect
 - **AND** archive keys are not shown in status bar
+
+### Requirement: Statistics overlay with S key
+The application SHALL toggle a statistics overlay when user presses 'S' (shift+s).
+
+#### Scenario: Open statistics
+- **WHEN** user presses 'S' (shift+s) on main board view
+- **THEN** a statistics overlay appears showing task metrics and graphs
+
+#### Scenario: Close statistics
+- **WHEN** user presses 'S' or Escape in the statistics overlay
+- **THEN** the overlay closes and view returns to board

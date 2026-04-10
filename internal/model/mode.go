@@ -28,6 +28,8 @@ const (
 	ModeFilter
 	// ModeSort is for sorting tasks
 	ModeSort
+	// ModeStats is for viewing statistics
+	ModeStats
 )
 
 // String returns the display name for the mode
@@ -57,6 +59,8 @@ func (m Mode) String() string {
 		return "FILTER"
 	case ModeSort:
 		return "SORT"
+	case ModeStats:
+		return "STATS"
 	default:
 		return ""
 	}
