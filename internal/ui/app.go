@@ -1740,23 +1740,29 @@ func (a *App) renderLoadingScreen() string {
 		Padding(2, 4).
 		Render(loadingText)
 
-	// Center horizontally and vertically
+	// Center using layers
 	boxWidth := lipgloss.Width(loadingBox)
 	boxHeight := lipgloss.Height(loadingBox)
 
-	paddingX := (a.state.Width - boxWidth) / 2
-	paddingY := (a.state.Height - boxHeight) / 2
-	if paddingX < 0 {
-		paddingX = 0
+	x := (a.state.Width - boxWidth) / 2
+	y := (a.state.Height - boxHeight) / 2
+	if x < 0 {
+		x = 0
 	}
-	if paddingY < 0 {
-		paddingY = 0
+	if y < 0 {
+		y = 0
 	}
 
-	vertPad := strings.Repeat("\n", paddingY)
-	horizPad := strings.Repeat(" ", paddingX)
+	// Create a blank background
+	bgStyle := lipgloss.NewStyle().Width(a.state.Width).Height(a.state.Height)
+	background := bgStyle.Render("")
 
-	return vertPad + horizPad + loadingBox
+	// Layer the box on top
+	bgLayer := lipgloss.NewLayer(background)
+	boxLayer := lipgloss.NewLayer(loadingBox).X(x).Y(y).Z(1)
+
+	compositor := lipgloss.NewCompositor(bgLayer, boxLayer)
+	return compositor.Render()
 }
 
 func (a *App) renderWelcomeScreen() string {
@@ -1776,26 +1782,34 @@ func (a *App) renderWelcomeScreen() string {
 		a.textInput.View() + "\n\n" +
 		styles.HelpHintStyle().Render("Press Enter to continue (or leave blank for 'My Tasks')")
 
-	// Center the content
+	// Set modal width
 	modalWidth := 60
-	modalHeight := 16
-
-	paddingX := (a.state.Width - modalWidth) / 2
-	paddingY := (a.state.Height - modalHeight) / 2
-	if paddingX < 0 {
-		paddingX = 0
-	}
-	if paddingY < 0 {
-		paddingY = 0
-	}
-
 	modal := styles.ModalStyle().Width(modalWidth).Render(content)
 
-	// Add vertical and horizontal padding
-	vertPad := strings.Repeat("\n", paddingY)
-	horizPad := strings.Repeat(" ", paddingX)
+	// Measure actual rendered dimensions
+	modalRenderWidth := lipgloss.Width(modal)
+	modalRenderHeight := lipgloss.Height(modal)
 
-	return vertPad + horizPad + modal
+	// Center the modal using proper calculations
+	x := (a.state.Width - modalRenderWidth) / 2
+	y := (a.state.Height - modalRenderHeight) / 2
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+
+	// Create a blank background
+	bgStyle := lipgloss.NewStyle().Width(a.state.Width).Height(a.state.Height)
+	background := bgStyle.Render("")
+
+	// Layer the modal on top
+	bgLayer := lipgloss.NewLayer(background)
+	modalLayer := lipgloss.NewLayer(modal).X(x).Y(y).Z(1)
+
+	compositor := lipgloss.NewCompositor(bgLayer, modalLayer)
+	return compositor.Render()
 }
 
 // truncateString truncates a string to maxLen characters, adding "..." if truncated
