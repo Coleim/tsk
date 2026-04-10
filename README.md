@@ -1,9 +1,18 @@
 # tsk - Terminal Task Manager
 
-A fast, keyboard-driven terminal task manager with Kanban-style workflow.
+> **Note:** This project was built to test and demonstrate the [OpenSpec](https://github.com/openspec-dev/openspec) framework — an experimental approach to AI-assisted software development using structured specifications. The app itself is fully functional!
+
+A fast, keyboard-driven terminal task manager with Kanban-style workflow. Built with Go and [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
 ![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+## Overview
+
+**tsk** is a terminal-based task manager that brings Kanban-style workflow to your command line. No browser, no electron, no bloat — just a fast TUI that stays out of your way.
+
+![alt text](/docs/assets/screenshot_01.png)
+![alt text](/docs/assets/screenshot_02.png)
 
 ## Features
 
@@ -234,3 +243,7 @@ This ensures code quality checks pass locally before pushing to CI.
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<sub>Built with ❤️ using [OpenSpec](https://github.com/openspec-dev/openspec) — an experimental AI-assisted development framework.</sub>
