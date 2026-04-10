@@ -8,6 +8,7 @@ set -e
 REPO="Coleim/tsk"
 BINARY_NAME="tsk"
 GITHUB_API="https://api.github.com/repos/${REPO}/releases"
+PAGES_URL="https://coleim.github.io/tsk"
 
 # Colors (only if terminal supports it)
 if [ -t 1 ]; then
@@ -119,13 +120,21 @@ fetch() {
     esac
 }
 
-# Get latest version from GitHub API
+# Get latest version (try GitHub Pages first, then API)
 get_latest_version() {
-    version=$(fetch "${GITHUB_API}/latest" | grep '"tag_name"' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
+    # Try GitHub Pages first (no rate limit)
+    version=$(fetch "${PAGES_URL}/latest.txt" 2>/dev/null | tr -d '[:space:]')
+    if [ -n "$version" ]; then
+        echo "$version"
+        return
+    fi
+    
+    # Fallback to GitHub API
+    version=$(fetch "${GITHUB_API}/latest" 2>/dev/null | grep '"tag_name"' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
     if [ -z "$version" ]; then
-        error "Failed to fetch latest version from GitHub.
-This might be due to API rate limiting. Try again later or specify a version:
-  curl -sSL ... | bash -s -- v1.0.0"
+        error "Failed to fetch latest version.
+Try specifying a version directly:
+  curl -sSL ... | bash -s -- v0.1.0"
     fi
     echo "$version"
 }

@@ -24,7 +24,8 @@ A fast, keyboard-driven terminal task manager with Kanban-style workflow.
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew install Coleim/tsk/tsk
+brew tap Coleim/tsk https://github.com/Coleim/tsk.git
+brew install tsk
 ```
 
 ### Shell Script

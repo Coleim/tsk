@@ -98,12 +98,15 @@ jobs:
           # Fix indentation (remove leading spaces from heredoc)
           sed -i 's/^          //' Formula/tsk.rb
           
+          # Update latest.txt for install script (avoids API rate limits)
+          echo "${VERSION}" > docs/latest.txt
+          
           # Clean up
           rm -f checksums.txt
           
-          # Commit and push formula
+          # Commit and push formula + latest.txt
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/tsk.rb
-          git commit -m "chore: update Homebrew formula for ${VERSION}" || echo "No changes to commit"
+          git add Formula/tsk.rb docs/latest.txt
+          git commit -m "chore: update Homebrew formula and version for ${VERSION}" || echo "No changes to commit"
           git push origin main
