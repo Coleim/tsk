@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/coliva/tsk/internal/model"
@@ -182,16 +183,21 @@ func (f *Filter) View(width, height int) string {
 	// Active filter summary at top (prominent position)
 	if f.HasFilters() {
 		var filterParts []string
-		for p, isSelected := range f.selectedPriorities {
-			if isSelected {
+		// Iterate in consistent order (High, Medium, Low, None)
+		for _, p := range []model.Priority{model.PriorityHigh, model.PriorityMedium, model.PriorityLow, model.PriorityNone} {
+			if f.selectedPriorities[p] {
 				filterParts = append(filterParts, p.String())
 			}
 		}
+		// Collect and sort labels for consistent display
+		var sortedLabels []string
 		for label, isSelected := range f.selectedLabels {
 			if isSelected {
-				filterParts = append(filterParts, label)
+				sortedLabels = append(sortedLabels, label)
 			}
 		}
+		sort.Strings(sortedLabels)
+		filterParts = append(filterParts, sortedLabels...)
 		lines = append(lines, styles.SuccessStyle().Render("✓ Active: "+strings.Join(filterParts, ", ")))
 		lines = append(lines, "")
 	}
