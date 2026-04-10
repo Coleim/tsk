@@ -10,6 +10,13 @@ import (
 	"github.com/coliva/tsk/internal/ui"
 )
 
+// Version information - injected at build time via ldflags
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	// Initialize theme from TSK_THEME environment variable
 	styles.InitTheme()
@@ -51,7 +58,7 @@ func main() {
 			return
 
 		case "version", "-v", "--version":
-			fmt.Println("tsk v0.1.0")
+			fmt.Printf("tsk version %s\ncommit: %s\nbuilt: %s\n", version, commit, date)
 			return
 		}
 	}

@@ -21,19 +21,38 @@ A fast, keyboard-driven terminal task manager with Kanban-style workflow.
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
+```bash
+brew tap coliva/tsk
+brew install tsk
+```
+
+### Shell Script
+
+```bash
+curl -sSL https://raw.githubusercontent.com/coliva/tsk/main/install.sh | bash
+```
+
+Or install a specific version:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/coliva/tsk/main/install.sh | bash -s -- v1.0.0
+```
+
+### Go Install
+
+```bash
+go install github.com/coliva/tsk/cmd/tsk@latest
+```
+
 ### From Source
 
 ```bash
-git clone https://github.com/coleim/tsk.git
+git clone https://github.com/coliva/tsk.git
 cd tsk
-go build -o tsk ./cmd/tsk
-sudo mv tsk /usr/local/bin/
-```
-
-### With Go Install
-
-```bash
-go install github.com/coleim/tsk/cmd/tsk@latest
+make build
+sudo mv bin/tsk /usr/local/bin/
 ```
 
 ## Quick Start

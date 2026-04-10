@@ -12,10 +12,16 @@ GOGET=$(GOCMD) get
 GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
 
+# Version info
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS = -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
+
 # Build the binary
 build:
 	@mkdir -p $(BINARY_DIR)
-	$(GOBUILD) -o $(BINARY_DIR)/$(BINARY) ./cmd/tsk
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_DIR)/$(BINARY) ./cmd/tsk
 
 # Run the application
 run: build
@@ -37,7 +43,7 @@ clean:
 
 # Install to GOPATH/bin
 install:
-	$(GOCMD) install ./cmd/tsk
+	$(GOCMD) install $(LDFLAGS) ./cmd/tsk
 
 # Format code
 fmt:

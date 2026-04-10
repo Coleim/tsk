@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew Formula
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          
+          # Checkout main branch (we're on detached HEAD at the tag)
+          git fetch origin main
+          git checkout main
+          
+          # Get checksums from release
+          curl -sL "https://github.com/${{ github.repository }}/releases/download/${VERSION}/checksums.txt" -o checksums.txt
+          
+          DARWIN_ARM64_SHA=$(grep "tsk_darwin_arm64.tar.gz" checksums.txt | awk '{print $1}')
+          DARWIN_AMD64_SHA=$(grep "tsk_darwin_amd64.tar.gz" checksums.txt | awk '{print $1}')
+          LINUX_ARM64_SHA=$(grep "tsk_linux_arm64.tar.gz" checksums.txt | awk '{print $1}')
+          LINUX_AMD64_SHA=$(grep "tsk_linux_amd64.tar.gz" checksums.txt | awk '{print $1}')
+          
+          # Create Formula directory
+          mkdir -p Formula
+          
+          # Generate formula (no leading spaces)
+          cat > Formula/tsk.rb << 'FORMULA'
+class Tsk < Formula
+  desc "Terminal task manager with TUI"
+  homepage "https://github.com/coliva/tsk"
+FORMULA
+          
+          cat >> Formula/tsk.rb << EOF
+  version "${VERSION#v}"
+  license "MIT"
+
+  on_macos do
+    on_intel do
+      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_darwin_amd64.tar.gz"
+      sha256 "${DARWIN_AMD64_SHA}"
+    end
+    on_arm do
+      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_darwin_arm64.tar.gz"
+      sha256 "${DARWIN_ARM64_SHA}"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_linux_amd64.tar.gz"
+      sha256 "${LINUX_AMD64_SHA}"
+    end
+    on_arm do
+      url "https://github.com/${{ github.repository }}/releases/download/${VERSION}/tsk_linux_arm64.tar.gz"
+      sha256 "${LINUX_ARM64_SHA}"
+    end
+  end
+
+  def install
+    bin.install "tsk"
+  end
+
+  test do
+    system "#{bin}/tsk", "--version"
+  end
+end
+EOF
+          
+          # Clean up
+          rm -f checksums.txt
+          
+          # Commit and push formula
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/tsk.rb
+          git commit -m "chore: update Homebrew formula for ${VERSION}" || echo "No changes to commit"
+          git push origin main
