@@ -35,8 +35,10 @@ The application SHALL provide a consistent footer bar for keyboard shortcuts acr
 
 #### Scenario: Hint bar rendering
 - **WHEN** a dialog or popup is displayed
-- **THEN** a keyboard hint bar appears at the bottom with muted text color
+- **THEN** a keyboard hint bar appears at the bottom
 - **AND** key bindings are formatted as "key:action" with spaces between items
+- **AND** the key portion is rendered with the accent color
+- **AND** the colon and action portions are rendered with muted text color
 
 #### Scenario: Hint bar separator
 - **WHEN** a hint bar is rendered in a full-screen dialog

@@ -296,6 +296,12 @@ func StatusLine2Style() lipgloss.Style {
 		Foreground(CurrentTheme.TextMuted)
 }
 
+// ShortcutKeyStyle returns the style for keyboard shortcut keys in the toolbar
+func ShortcutKeyStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Accent)
+}
+
 // StatusBarStyle returns the status bar container style
 func StatusBarStyle() lipgloss.Style {
 	return lipgloss.NewStyle().

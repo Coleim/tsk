@@ -1581,6 +1581,11 @@ func (a *App) renderPreview(width, height int) string {
 	return styles.PreviewStyle().Width(width - 2).Height(height).Render(content)
 }
 
+// formatShortcut renders a keyboard shortcut with the key in accent color
+func formatShortcut(key, action string) string {
+	return styles.ShortcutKeyStyle().Render(key) + styles.StatusLine2Style().Render(":"+action)
+}
+
 func (a *App) renderStatusBar() string {
 	// Line 1: Context or feedback message
 	line1 := ""
@@ -1620,12 +1625,12 @@ func (a *App) renderStatusBar() string {
 	// Line 2: Shortcuts (context-sensitive)
 	var shortcuts string
 	if a.state.CurrentPane == model.StatusDone {
-		shortcuts = "j/k:nav  h/l:pane  d:del  a:archive  A:archive all  Enter:edit  b:board"
+		shortcuts = formatShortcut("j/k", "nav") + "  " + formatShortcut("h/l", "pane") + "  " + formatShortcut("d", "del") + "  " + formatShortcut("a", "archive") + "  " + formatShortcut("A", "archive all") + "  " + formatShortcut("Enter", "edit") + "  " + formatShortcut("b", "board")
 	} else {
-		shortcuts = "j/k:nav  h/l:pane  n:new  d:del  >/<:move  Enter:edit  1-3:priority  b:board"
+		shortcuts = formatShortcut("j/k", "nav") + "  " + formatShortcut("h/l", "pane") + "  " + formatShortcut("n", "new") + "  " + formatShortcut("d", "del") + "  " + formatShortcut(">/<", "move") + "  " + formatShortcut("Enter", "edit") + "  " + formatShortcut("1-3", "priority") + "  " + formatShortcut("b", "board")
 	}
 
-	return styles.StatusLine1Style().Render(line1) + "\n" + styles.StatusLine2Style().Render(shortcuts)
+	return styles.StatusLine1Style().Render(line1) + "\n" + shortcuts
 }
 
 func (a *App) renderHelpOverlay() string {
