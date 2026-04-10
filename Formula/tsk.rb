@@ -1,28 +1,28 @@
 class Tsk < Formula
   desc "Terminal task manager with TUI"
   homepage "https://github.com/Coleim/tsk"
-  version "0.2.0"
+  version "0.3.0"
   license "MIT"
 
   on_macos do
     on_intel do
-      url "https://github.com/Coleim/tsk/releases/download/v0.2.0/tsk_darwin_amd64.tar.gz"
-      sha256 "f680faddde8981b48dc37c354db0b97ec8a38a3df2c23b8bc6668999f2333341"
+      url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_darwin_amd64.tar.gz"
+      sha256 "731b4502f80aedb10caa2ec5f56e46515766c51032552970c45b22bfbfc37116"
     end
     on_arm do
-      url "https://github.com/Coleim/tsk/releases/download/v0.2.0/tsk_darwin_arm64.tar.gz"
-      sha256 "34bec1f1395c3acd12235d8841fc7b798796b900b27980aa650c7e9fb15ee426"
+      url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_darwin_arm64.tar.gz"
+      sha256 "edfbabaa035317e48b01c96ccd65e4339453631fdc4700225600038dc6f1987d"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/Coleim/tsk/releases/download/v0.2.0/tsk_linux_amd64.tar.gz"
-      sha256 "211c2c3a4ef75961356a77123922db6049802b925fd66b2e35036000e7f88c4d"
+      url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_linux_amd64.tar.gz"
+      sha256 "ff185b8ed5cb14e621867e0a02713fb3280c4e64da51347b1dda42f4a7959c1c"
     end
     on_arm do
-      url "https://github.com/Coleim/tsk/releases/download/v0.2.0/tsk_linux_arm64.tar.gz"
-      sha256 "909e90af2b45bf6ad1d02098c1868c2b077c9a02d54c06fb31a6599fd5c7644f"
+      url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_linux_arm64.tar.gz"
+      sha256 "fbc4b60575b2b09783bfde5dadd4fc83c9c8616e14e2f82f8885cad2ab4e1aa6"
     end
   end
 
