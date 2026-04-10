@@ -7,22 +7,22 @@ class Tsk < Formula
   on_macos do
     on_intel do
       url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_darwin_amd64.tar.gz"
-      sha256 "b2590687d4de4c837ace3b0c5d2beb4a387092902ee39fcd1c8bb9561e2e11f4"
+      sha256 "98277149d7a3ab2579f102824744db31d48e1d9bb04c4db2df2eb0893567a388"
     end
     on_arm do
       url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_darwin_arm64.tar.gz"
-      sha256 "382d2147b01a90bdb53f0c4a6d01184d0dffc7adf22953d527da3171dda2e0d4"
+      sha256 "4c0a8a756595673e6b9deaf07a1bd9a9cca5e981e1ac7a9f02e0a1627be7072a"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_linux_amd64.tar.gz"
-      sha256 "f2b9a79b71057aa5a8bd448b28746206db8d31597b244570a9a76ed3cd179621"
+      sha256 "74523e3b15bb059540d21277367b949d7dcb7c4de5fad647db260f0cd30466c2"
     end
     on_arm do
       url "https://github.com/Coleim/tsk/releases/download/v0.3.0/tsk_linux_arm64.tar.gz"
-      sha256 "2cb80c5685b125136ec98020bcad1de07aeec591a2ec1d4942845ba4d632ba24"
+      sha256 "2ab4b0b3a08570a0cc4601532a8d0698fc4d08e696f9e5e59e36188762b4b320"
     end
   end
 
