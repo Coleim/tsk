@@ -464,15 +464,14 @@ func TestFilterWorkflow(t *testing.T) {
 	}
 
 	// Apply filter
-	highPriority := model.PriorityHigh
-	app.state.FilterPriority = &highPriority
+	app.state.FilterPriorities = []model.Priority{model.PriorityHigh}
 
 	if len(app.state.CurrentTasks()) != 1 {
 		t.Errorf("Expected 1 task with High priority filter, got %d", len(app.state.CurrentTasks()))
 	}
 
 	// Clear filter
-	app.state.FilterPriority = nil
+	app.state.FilterPriorities = nil
 	app.state.FilterLabels = nil
 
 	if len(app.state.CurrentTasks()) != 3 {

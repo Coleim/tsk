@@ -47,8 +47,8 @@ type AppState struct {
 	SearchResults []*Task
 
 	// Filters
-	FilterPriority *Priority
-	FilterLabels   []string
+	FilterPriorities []Priority
+	FilterLabels     []string
 
 	// Scroll offset for task list
 	ScrollOffset int
@@ -82,7 +82,7 @@ func (s *AppState) CurrentTasks() []*Task {
 	tasks := s.Board.TasksByStatus(s.CurrentPane)
 
 	// Apply filters if any are active
-	if s.FilterPriority == nil && len(s.FilterLabels) == 0 {
+	if len(s.FilterPriorities) == 0 && len(s.FilterLabels) == 0 {
 		return tasks
 	}
 
@@ -97,9 +97,18 @@ func (s *AppState) CurrentTasks() []*Task {
 
 // matchesFilters checks if a task matches the current filters
 func (s *AppState) matchesFilters(task *Task) bool {
-	// Check priority filter
-	if s.FilterPriority != nil && task.Priority != *s.FilterPriority {
-		return false
+	// Check priority filter (task must match ANY selected priority)
+	if len(s.FilterPriorities) > 0 {
+		matchesPriority := false
+		for _, p := range s.FilterPriorities {
+			if task.Priority == p {
+				matchesPriority = true
+				break
+			}
+		}
+		if !matchesPriority {
+			return false
+		}
 	}
 
 	// Check label filters (task must have ALL selected labels)
@@ -121,7 +130,7 @@ func (s *AppState) matchesFilters(task *Task) bool {
 
 // HasActiveFilters returns true if any filters are active
 func (s *AppState) HasActiveFilters() bool {
-	return s.FilterPriority != nil || len(s.FilterLabels) > 0
+	return len(s.FilterPriorities) > 0 || len(s.FilterLabels) > 0
 }
 
 // SelectedTask returns the currently selected task

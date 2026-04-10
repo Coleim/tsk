@@ -250,49 +250,60 @@ func (te *TaskEdit) View(width, height int) string {
 	lines = append(lines, styles.ModalTitleStyle().Render("Edit Task"))
 	lines = append(lines, "")
 
-	// Title field
-	titleLabel := "Title:"
+	// Title field with proper styling
+	var titleLabel string
 	if te.activeField == EditFieldTitle {
-		titleLabel = "▶ Title:"
+		titleLabel = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render("Title:")
+	} else {
+		titleLabel = styles.InactiveIndicator() + styles.FormFieldLabelStyle().Render("Title:")
 	}
-	lines = append(lines, styles.PreviewLabelStyle().Render(titleLabel))
-	lines = append(lines, te.titleInput.View())
+	lines = append(lines, titleLabel)
+	lines = append(lines, "    "+te.titleInput.View())
 	lines = append(lines, "")
 
-	// Description field
-	descLabel := "Description:"
+	// Description field with proper styling
+	var descLabel string
 	if te.activeField == EditFieldDescription {
-		descLabel = "▶ Description:"
+		descLabel = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render("Description:")
+	} else {
+		descLabel = styles.InactiveIndicator() + styles.FormFieldLabelStyle().Render("Description:")
 	}
-	lines = append(lines, styles.PreviewLabelStyle().Render(descLabel))
-	lines = append(lines, te.descInput.View())
+	lines = append(lines, descLabel)
+	lines = append(lines, "    "+te.descInput.View())
 	lines = append(lines, "")
 
-	// Labels field
-	labelsLabel := "Labels:"
+	// Labels field with proper styling
+	var labelsLabel string
 	if te.activeField == EditFieldLabels {
-		labelsLabel = "▶ Labels:"
+		labelsLabel = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render("Labels:")
+	} else {
+		labelsLabel = styles.InactiveIndicator() + styles.FormFieldLabelStyle().Render("Labels:")
 	}
-	lines = append(lines, styles.PreviewLabelStyle().Render(labelsLabel))
-	lines = append(lines, te.labelInput.View())
+	lines = append(lines, labelsLabel)
+	lines = append(lines, "    "+te.labelInput.View())
 
 	// Show popup or hint based on state
 	if te.showLabelPopup && te.Board != nil {
 		// Render the label popup
 		lines = append(lines, te.renderLabelPopup())
 	} else if te.activeField == EditFieldLabels {
-		lines = append(lines, styles.HelpHintStyle().Render("  (Tab to open label picker)"))
+		lines = append(lines, styles.HelpHintStyle().Render("    (Tab to open label picker)"))
 	}
 	lines = append(lines, "")
 
-	// Help text
+	// Separator line above hints
+	lines = append(lines, styles.DialogSeparator(40))
+
+	// Help text with consistent styling
+	var helpText string
 	if te.showLabelPopup {
-		lines = append(lines, styles.HelpHintStyle().Render("Tab: next  Shift+Tab: prev  Enter: select  Esc: close"))
+		helpText = "Tab:next  Shift+Tab:prev  Enter:select  Esc:close"
 	} else if te.activeField == EditFieldLabels {
-		lines = append(lines, styles.HelpHintStyle().Render("Tab: open labels  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+		helpText = "Tab:labels  Shift+Tab:prev  Enter:save  Esc:cancel"
 	} else {
-		lines = append(lines, styles.HelpHintStyle().Render("Tab: next field  Shift+Tab: prev field  Enter: save  Esc: cancel"))
+		helpText = "Tab:next  Shift+Tab:prev  Enter:save  Esc:cancel"
 	}
+	lines = append(lines, styles.KeyboardHintBarStyle().Render(helpText))
 
 	content := strings.Join(lines, "\n")
 
@@ -320,24 +331,24 @@ func (te *TaskEdit) renderLabelPopup() string {
 
 	labels := te.Board.AllLabels()
 	if len(labels) == 0 {
-		return styles.HelpHintStyle().Render("  (No labels available)")
+		return styles.HelpHintStyle().Render("    (No labels available)")
 	}
 
 	var items []string
-	items = append(items, styles.PopupTitleStyle().Render("Select Label"))
+	items = append(items, styles.SectionCardTitleStyle().Render("Select Label"))
 
 	for i, labelName := range labels {
 		label := te.Board.GetLabel(labelName)
 		badge := styles.LabelBadge(label.Name, label.Color)
 
 		if i == te.popupSelectedIdx {
-			// Highlight selected item with background
-			items = append(items, styles.PopupSelectedItemStyle().Render("▶ "+badge))
+			// Highlight selected item with accent styling
+			items = append(items, styles.ActiveIndicator()+badge)
 		} else {
-			items = append(items, styles.PopupItemStyle().Render("  "+badge))
+			items = append(items, styles.InactiveIndicator()+badge)
 		}
 	}
 
 	content := strings.Join(items, "\n")
-	return styles.PopupStyle().Render(content)
+	return styles.SectionCardStyle().Width(30).Render(content)
 }

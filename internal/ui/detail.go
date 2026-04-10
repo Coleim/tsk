@@ -35,24 +35,28 @@ func (td *TaskDetail) View(width, height int) string {
 	lines = append(lines, header)
 	lines = append(lines, "")
 
-	// Task title
+	// Task title (prominent)
 	lines = append(lines, styles.ModalTitleStyle().Render(td.Task.Title))
 	lines = append(lines, "")
 
+	// Metadata section
+	lines = append(lines, styles.DialogSeparator(35))
+	lines = append(lines, "")
+
 	// Status
-	statusLine := styles.PreviewLabelStyle().Render("Status:    ") +
+	statusLine := styles.FormFieldLabelStyle().Render("Status:    ") +
 		styles.StatusStyle(td.Task.Status).Render(td.Task.Status.String())
 	lines = append(lines, statusLine)
 
 	// Priority
-	priorityLine := styles.PreviewLabelStyle().Render("Priority:  ") +
+	priorityLine := styles.FormFieldLabelStyle().Render("Priority:  ") +
 		styles.PriorityStyle(td.Task.Priority).Render(td.Task.Priority.String()) +
 		" " + styles.PriorityIndicator(td.Task.Priority)
 	lines = append(lines, priorityLine)
 
 	// Due date
 	if td.Task.DueDate != nil {
-		dueLine := styles.PreviewLabelStyle().Render("Due:       ") +
+		dueLine := styles.FormFieldLabelStyle().Render("Due:       ") +
 			styles.PreviewValueStyle().Render(td.Task.DueDate.Format("Monday, January 2, 2006"))
 		lines = append(lines, dueLine)
 	}
@@ -64,12 +68,13 @@ func (td *TaskDetail) View(width, height int) string {
 			label := td.Board.GetLabel(labelName)
 			labelBadges = append(labelBadges, styles.LabelBadge(label.Name, label.Color))
 		}
-		labelsLine := styles.PreviewLabelStyle().Render("Labels:    ") + strings.Join(labelBadges, " ")
+		labelsLine := styles.FormFieldLabelStyle().Render("Labels:    ") + strings.Join(labelBadges, " ")
 		lines = append(lines, labelsLine)
 	}
 
-	// Created/Updated times
 	lines = append(lines, "")
+
+	// Timestamps section (subtle)
 	createdLine := styles.HelpHintStyle().Render(fmt.Sprintf("Created: %s",
 		td.Task.CreatedAt.Format("Jan 2, 2006 3:04 PM")))
 	lines = append(lines, createdLine)
@@ -78,14 +83,17 @@ func (td *TaskDetail) View(width, height int) string {
 		td.Task.UpdatedAt.Format("Jan 2, 2006 3:04 PM")))
 	lines = append(lines, updatedLine)
 
-	// Description
+	// Description section with divider
 	lines = append(lines, "")
+	lines = append(lines, styles.DialogSeparator(35))
+	lines = append(lines, "")
+
 	if td.Task.Description != "" {
-		lines = append(lines, styles.PreviewLabelStyle().Render("Description:"))
+		lines = append(lines, styles.FormFieldActiveLabelStyle().Render("Description"))
 		lines = append(lines, "")
 
 		// Word wrap description
-		wrapped := wordWrap(td.Task.Description, width-4)
+		wrapped := wordWrap(td.Task.Description, width-8)
 		for _, line := range wrapped {
 			lines = append(lines, styles.PreviewValueStyle().Render(line))
 		}
@@ -93,10 +101,10 @@ func (td *TaskDetail) View(width, height int) string {
 		lines = append(lines, styles.HelpHintStyle().Render("(No description)"))
 	}
 
-	// Add shortcuts at bottom
+	// Keyboard hints at bottom with separator
 	lines = append(lines, "")
-	lines = append(lines, styles.StatusLine2Style().Render("───────────────────────────────────────"))
-	lines = append(lines, styles.StatusLine2Style().Render("e:edit  d:delete  1-3:priority  L:labels  t:due date"))
+	lines = append(lines, styles.DialogSeparator(40))
+	lines = append(lines, styles.KeyboardHintBarStyle().Render("e:edit  d:delete  1-3:priority  L:labels  t:due date"))
 
 	content := strings.Join(lines, "\n")
 

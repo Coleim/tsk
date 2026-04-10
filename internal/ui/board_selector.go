@@ -152,27 +152,44 @@ func (bs *BoardSelector) View(width, height int) string {
 	case BoardModeCreate:
 		lines = append(lines, styles.ModalTitleStyle().Render("Create New Board"))
 		lines = append(lines, "")
-		lines = append(lines, styles.PreviewLabelStyle().Render("Name:"))
-		lines = append(lines, bs.input.View())
+
+		// Form section with proper styling
+		formLines := []string{}
+		formLines = append(formLines, styles.ActiveIndicator()+styles.FormFieldActiveLabelStyle().Render("Name:"))
+		formLines = append(formLines, "    "+bs.input.View())
+		lines = append(lines, styles.SectionCardStyle().Render(strings.Join(formLines, "\n")))
+
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle().Render("Enter: create  Esc: cancel"))
+		lines = append(lines, styles.DialogSeparator(40))
+		lines = append(lines, styles.KeyboardHintBarStyle().Render("Enter:create  Esc:cancel"))
 
 	case BoardModeRename:
 		lines = append(lines, styles.ModalTitleStyle().Render("Rename Board"))
 		lines = append(lines, "")
-		lines = append(lines, styles.PreviewLabelStyle().Render("New name:"))
-		lines = append(lines, bs.input.View())
+
+		// Form section with proper styling
+		formLines := []string{}
+		formLines = append(formLines, styles.ActiveIndicator()+styles.FormFieldActiveLabelStyle().Render("New name:"))
+		formLines = append(formLines, "    "+bs.input.View())
+		lines = append(lines, styles.SectionCardStyle().Render(strings.Join(formLines, "\n")))
+
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle().Render("Enter: rename  Esc: cancel"))
+		lines = append(lines, styles.DialogSeparator(40))
+		lines = append(lines, styles.KeyboardHintBarStyle().Render("Enter:rename  Esc:cancel"))
 
 	case BoardModeDelete:
 		lines = append(lines, styles.ModalTitleStyle().Render("Delete Board"))
 		lines = append(lines, "")
 		if bs.SelectedBoard() != nil {
 			boardName := bs.SelectedBoard().Name
-			lines = append(lines, styles.ErrorStyle().Render(fmt.Sprintf("Delete '%s'?", boardName)))
-			lines = append(lines, "")
-			lines = append(lines, styles.HelpHintStyle().Render("This cannot be undone!"))
+
+			// Warning section
+			warnLines := []string{}
+			warnLines = append(warnLines, styles.ErrorStyle().Render("⚠ Delete '"+boardName+"'?"))
+			warnLines = append(warnLines, "")
+			warnLines = append(warnLines, styles.HelpHintStyle().Render("This cannot be undone!"))
+			lines = append(lines, styles.SectionCardStyle().Render(strings.Join(warnLines, "\n")))
+
 			lines = append(lines, "")
 			if bs.confirmDelete {
 				lines = append(lines, styles.ErrorStyle().Render("Press 'y' to confirm or Esc to cancel"))
@@ -188,28 +205,41 @@ func (bs *BoardSelector) View(width, height int) string {
 		if len(bs.boards) == 0 {
 			lines = append(lines, styles.HelpHintStyle().Render("No boards found"))
 		} else {
+			// Each board as a card-style entry
 			for i, board := range bs.boards {
-				var line string
-				indicator := "  "
+				var cardContent string
+				isCurrent := bs.currentBoard != nil && board.ID == bs.currentBoard.ID
 
-				// Mark current board
-				if bs.currentBoard != nil && board.ID == bs.currentBoard.ID {
-					indicator = "• "
+				// Board name with current indicator
+				var nameDisplay string
+				if isCurrent {
+					nameDisplay = "• " + board.Name
+				} else {
+					nameDisplay = "  " + board.Name
 				}
 
-				name := fmt.Sprintf("%s%s (%d tasks)", indicator, board.Name, board.TaskCount)
+				// Task count as secondary info
+				taskInfo := styles.HelpHintStyle().Render(fmt.Sprintf("%d tasks", board.TaskCount))
 
 				if i == bs.selectedIdx {
-					line = styles.TaskSelectedStyle().Render(" ▶ " + name)
+					// Selected board - use arrow indicator and accent color
+					cardContent = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render(nameDisplay) + "  " + taskInfo
+					lines = append(lines, styles.TaskSelectedStyle().Render(cardContent))
+				} else if isCurrent {
+					// Current board but not selected - subtle highlight
+					cardContent = styles.InactiveIndicator() + styles.PreviewValueStyle().Render(nameDisplay) + "  " + taskInfo
+					lines = append(lines, cardContent)
 				} else {
-					line = styles.TaskNormalStyle().Render("   " + name)
+					// Normal board - no special styling
+					cardContent = styles.InactiveIndicator() + styles.PopupItemStyle().Render(nameDisplay) + "  " + taskInfo
+					lines = append(lines, cardContent)
 				}
-				lines = append(lines, line)
 			}
 		}
 
 		lines = append(lines, "")
-		lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Enter: switch  B: new  R: rename  D: delete  Esc: cancel"))
+		lines = append(lines, styles.DialogSeparator(40))
+		lines = append(lines, styles.KeyboardHintBarStyle().Render("j/k:navigate  Enter:switch  B:new  R:rename  D:delete  Esc:cancel"))
 	}
 
 	content := strings.Join(lines, "\n")

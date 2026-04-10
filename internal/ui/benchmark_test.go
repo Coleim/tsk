@@ -111,8 +111,7 @@ func BenchmarkFilter(b *testing.B) {
 	state := model.NewAppState()
 	state.SetBoard(board)
 
-	highPriority := model.PriorityHigh
-	state.FilterPriority = &highPriority
+	state.FilterPriorities = []model.Priority{model.PriorityHigh}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -248,8 +247,7 @@ func TestPerformanceThresholds(t *testing.T) {
 	t.Run("FilterUnder50ms", func(t *testing.T) {
 		state := model.NewAppState()
 		state.SetBoard(board)
-		highPriority := model.PriorityHigh
-		state.FilterPriority = &highPriority
+		state.FilterPriorities = []model.Priority{model.PriorityHigh}
 
 		start := time.Now()
 		_ = state.CurrentTasks()

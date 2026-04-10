@@ -430,13 +430,13 @@ func (a *App) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 	case "f":
 		// Enter filter mode
-		a.filter = NewFilter(a.state.Board, a.state.FilterPriority, a.state.FilterLabels)
+		a.filter = NewFilter(a.state.Board, a.state.FilterPriorities, a.state.FilterLabels)
 		a.state.Mode = model.ModeFilter
 		return nil
 
 	case "F":
 		// Clear filters
-		a.state.FilterPriority = nil
+		a.state.FilterPriorities = nil
 		a.state.FilterLabels = nil
 		a.state.SetStatusMessage("Filters cleared")
 
@@ -872,7 +872,7 @@ func (a *App) handleFilterMode(msg tea.KeyMsg) tea.Cmd {
 	if done {
 		if apply {
 			// Apply filters to state
-			a.state.FilterPriority = a.filter.GetSelectedPriority()
+			a.state.FilterPriorities = a.filter.GetSelectedPriorities()
 			a.state.FilterLabels = a.filter.GetSelectedLabels()
 			if a.filter.HasFilters() {
 				a.state.SetStatusMessage("Filters applied (F to clear)")
@@ -1418,9 +1418,6 @@ func (a *App) renderTaskList(width, height int) string {
 	for i := startIdx; i < endIdx; i++ {
 		task := tasks[i]
 
-		// Priority indicator
-		priority := styles.PriorityIndicator(task.Priority)
-
 		// Task title - truncate if needed
 		title := task.Title
 		if len(title) > maxTitleWidth {
@@ -1430,11 +1427,14 @@ func (a *App) renderTaskList(width, height int) string {
 		// Style based on selection - both have rounded borders
 		var line string
 		if i == a.state.SelectedIndex {
-			// Selected: arrow + priority + title, with accent border
+			// Selected: use plain priority symbol to avoid ANSI codes
+			// that would interfere with the container's background
+			priority := styles.PrioritySymbol(task.Priority)
 			content := fmt.Sprintf("▶ %s %s", priority, title)
 			line = styles.TaskSelectedStyle().Width(taskWidth).Render(content)
 		} else {
-			// Unselected: priority + title, with subtle border
+			// Unselected: use colored priority indicator
+			priority := styles.PriorityIndicator(task.Priority)
 			content := fmt.Sprintf("  %s %s", priority, title)
 			line = styles.TaskNormalStyle().Width(taskWidth).Render(content)
 		}

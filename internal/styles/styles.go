@@ -234,9 +234,9 @@ func TaskSelectedStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Bold(true).
 		Foreground(CurrentTheme.Accent).
-		Background(CurrentTheme.Surface).
+		Background(CurrentTheme.Elevated).
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#cba6f7")). // Charm mauve/lavender
+		BorderForeground(CurrentTheme.Accent).
 		Padding(0, 1)
 }
 
@@ -392,9 +392,15 @@ func PriorityStyle(p model.Priority) lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(c)
 }
 
-// PriorityIndicator returns a styled priority symbol
+// PriorityIndicator returns a styled priority symbol (with ANSI color codes)
 func PriorityIndicator(p model.Priority) string {
 	return PriorityStyle(p).Render(p.Symbol())
+}
+
+// PrioritySymbol returns just the priority symbol without styling
+// Use this when embedding in a container that already has styling applied
+func PrioritySymbol(p model.Priority) string {
+	return p.Symbol()
 }
 
 // PriorityColor returns the color for a priority level
@@ -541,4 +547,87 @@ func TaskCardStyle(selected bool, priority model.Priority) lipgloss.Style {
 		BorderForeground(priorityColor).
 		Padding(0, 1).
 		MarginBottom(1)
+}
+
+// =============================================================================
+// Visual Components - Reusable styles for consistent UI
+// =============================================================================
+
+// SectionCardStyle returns a style for visually grouping related content
+func SectionCardStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(CurrentTheme.BorderLight).
+		Padding(1, 2)
+}
+
+// SectionCardTitleStyle returns a style for section card headers with accent underline
+func SectionCardTitleStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent).
+		BorderBottom(true).
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(CurrentTheme.Accent).
+		MarginBottom(1)
+}
+
+// FormFieldLabelStyle returns the style for standard form labels (muted)
+func FormFieldLabelStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
+
+// FormFieldActiveLabelStyle returns the style for focused/active field labels
+func FormFieldActiveLabelStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextPrimary).
+		Bold(true)
+}
+
+// KeyboardHintBarStyle returns a style for consistent footer keyboard hints
+func KeyboardHintBarStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted).
+		MarginTop(1)
+}
+
+// CheckboxUncheckedStyle returns the style for unchecked checkbox
+func CheckboxUncheckedStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.TextMuted)
+}
+
+// CheckboxCheckedStyle returns the style for checked checkbox with success color
+func CheckboxCheckedStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.Success)
+}
+
+// DialogSeparatorStyle returns a style for thin horizontal divider lines
+func DialogSeparatorStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(CurrentTheme.BorderLight)
+}
+
+// DialogSeparator returns a horizontal separator line
+func DialogSeparator(width int) string {
+	if width <= 0 {
+		width = 40
+	}
+	line := ""
+	for i := 0; i < width; i++ {
+		line += "─"
+	}
+	return DialogSeparatorStyle().Render(line)
+}
+
+// ActiveIndicator returns the arrow indicator for active/selected items
+func ActiveIndicator() string {
+	return FormFieldActiveLabelStyle().Render("▶ ")
+}
+
+// InactiveIndicator returns spacing to align with active indicator
+func InactiveIndicator() string {
+	return "  "
 }

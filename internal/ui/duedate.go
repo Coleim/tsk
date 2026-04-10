@@ -109,13 +109,13 @@ func (de *DueDateEditor) View() string {
 	// Current due date
 	if de.Task.DueDate != nil {
 		current := de.Task.DueDate.Format("Monday, January 2, 2006")
-		lines = append(lines, styles.PreviewLabelStyle().Render("Current: ")+styles.PreviewValueStyle().Render(current))
+		lines = append(lines, styles.FormFieldLabelStyle().Render("Current: ")+styles.PreviewValueStyle().Render(current))
 		lines = append(lines, "")
 	}
 
-	// Input
-	lines = append(lines, styles.PreviewLabelStyle().Render("New date:"))
-	lines = append(lines, de.input.View())
+	// Input with proper styling
+	lines = append(lines, styles.ActiveIndicator()+styles.FormFieldActiveLabelStyle().Render("New date:"))
+	lines = append(lines, "    "+de.input.View())
 
 	// Error or preview
 	if de.err != "" {
@@ -132,7 +132,7 @@ func (de *DueDateEditor) View() string {
 	var opts []string
 	for i, opt := range quickDateOptions {
 		if i == de.quickIdx {
-			opts = append(opts, styles.PopupSelectedItemStyle().Render("["+opt+"]"))
+			opts = append(opts, styles.FormFieldActiveLabelStyle().Render("["+opt+"]"))
 		} else {
 			opts = append(opts, styles.HelpHintStyle().Render(opt))
 		}
@@ -140,11 +140,11 @@ func (de *DueDateEditor) View() string {
 	lines = append(lines, "  "+strings.Join(opts, "  "))
 	lines = append(lines, "")
 
-	lines = append(lines, styles.HelpHintStyle().Render("Enter: save  Esc: cancel  Tab: quick select"))
+	lines = append(lines, styles.KeyboardHintBarStyle().Render("Enter:save  Esc:cancel  Tab:quick select"))
 
 	content := strings.Join(lines, "\n")
 
-	// Popup style - fixed width, no height constraint
+	// Popup style - fixed width 60 for date display
 	return styles.ModalStyle().Width(60).Render(content)
 }
 

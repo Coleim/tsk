@@ -125,24 +125,27 @@ func (s *SimpleSearch) View() string {
 	} else {
 		b.WriteString("\n")
 		for i, task := range s.results {
-			prefix := "  "
-			style := styles.TaskNormalStyle()
+			var prefix string
+			var titleStyle string
 			if i == s.selectedIdx {
-				prefix = "> "
-				style = styles.TaskSelectedStyle()
+				prefix = styles.ActiveIndicator()
+				titleStyle = styles.FormFieldActiveLabelStyle().Render(task.Title)
+			} else {
+				prefix = styles.InactiveIndicator()
+				title := task.Title
+				if len(title) > 35 {
+					title = title[:32] + "..."
+				}
+				titleStyle = styles.PopupItemStyle().Render(title)
 			}
-			title := task.Title
-			if len(title) > 35 {
-				title = title[:32] + "..."
-			}
-			fmt.Fprintf(&b, "%s%s\n", prefix, style.Render(title))
+			fmt.Fprintf(&b, "%s%s\n", prefix, titleStyle)
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(styles.HelpHintStyle().Render("↑↓:select Enter:go Esc:close"))
+	b.WriteString(styles.KeyboardHintBarStyle().Render("↑↓:select Enter:go Esc:close"))
 
-	// Create popup box
+	// Create popup box - standard width 50
 	return styles.ModalStyle().
 		Width(50).
 		Render(b.String())

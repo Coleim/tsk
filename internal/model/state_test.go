@@ -274,8 +274,7 @@ func TestCurrentTasksWithFilters(t *testing.T) {
 	}
 
 	// With priority filter - only high
-	highPriority := PriorityHigh
-	state.FilterPriority = &highPriority
+	state.FilterPriorities = []Priority{PriorityHigh}
 	tasks = state.CurrentTasks()
 	if len(tasks) != 1 {
 		t.Errorf("Expected 1 high priority task, got %d", len(tasks))
@@ -285,7 +284,7 @@ func TestCurrentTasksWithFilters(t *testing.T) {
 	}
 
 	// Clear filter
-	state.FilterPriority = nil
+	state.FilterPriorities = nil
 	tasks = state.CurrentTasks()
 	if len(tasks) != 3 {
 		t.Errorf("Expected 3 tasks after clearing filter, got %d", len(tasks))
@@ -301,14 +300,13 @@ func TestHasActiveFilters(t *testing.T) {
 	}
 
 	// With priority filter
-	highPriority := PriorityHigh
-	state.FilterPriority = &highPriority
+	state.FilterPriorities = []Priority{PriorityHigh}
 	if !state.HasActiveFilters() {
 		t.Error("Expected active filters with priority set")
 	}
 
 	// With label filter
-	state.FilterPriority = nil
+	state.FilterPriorities = nil
 	state.FilterLabels = []string{"bug"}
 	if !state.HasActiveFilters() {
 		t.Error("Expected active filters with labels set")

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/coliva/tsk/internal/model"
@@ -28,13 +27,13 @@ type Filter struct {
 }
 
 // NewFilter creates a new filter component
-func NewFilter(board *model.Board, currentPriority *model.Priority, currentLabels []string) *Filter {
+func NewFilter(board *model.Board, currentPriorities []model.Priority, currentLabels []string) *Filter {
 	priorities := make(map[model.Priority]bool)
 	labels := make(map[string]bool)
 
 	// Initialize from current filters
-	if currentPriority != nil {
-		priorities[*currentPriority] = true
+	for _, p := range currentPriorities {
+		priorities[p] = true
 	}
 	for _, label := range currentLabels {
 		labels[label] = true
@@ -135,22 +134,15 @@ func (f *Filter) indexToPriority(idx int) model.Priority {
 	}
 }
 
-// GetSelectedPriority returns the selected priority filter (nil if multiple or none)
-func (f *Filter) GetSelectedPriority() *model.Priority {
-	var selected *model.Priority
-	count := 0
+// GetSelectedPriorities returns all selected priority filters
+func (f *Filter) GetSelectedPriorities() []model.Priority {
+	var priorities []model.Priority
 	for p, isSelected := range f.selectedPriorities {
 		if isSelected {
-			count++
-			pCopy := p
-			selected = &pCopy
+			priorities = append(priorities, p)
 		}
 	}
-	// Only return if exactly one priority is selected
-	if count == 1 {
-		return selected
-	}
-	return nil
+	return priorities
 }
 
 // GetSelectedLabels returns the selected label filters
@@ -187,67 +179,7 @@ func (f *Filter) View(width, height int) string {
 	lines = append(lines, styles.ModalTitleStyle().Render("Filter Tasks"))
 	lines = append(lines, "")
 
-	// Priority section
-	lines = append(lines, styles.PreviewLabelStyle().Render("Priority:"))
-	priorities := []struct {
-		p    model.Priority
-		name string
-	}{
-		{model.PriorityHigh, "High"},
-		{model.PriorityMedium, "Medium"},
-		{model.PriorityLow, "Low"},
-		{model.PriorityNone, "None"},
-	}
-
-	for i, p := range priorities {
-		checkbox := "[ ]"
-		if f.selectedPriorities[p.p] {
-			checkbox = "[x]"
-		}
-
-		prefix := "  "
-		style := styles.TaskNormalStyle()
-		if f.mode == FilterModePriority && f.priorityIdx == i {
-			prefix = "▶ "
-			style = styles.TaskSelectedStyle()
-		}
-
-		prioStyle := styles.PriorityStyle(p.p)
-		line := prefix + checkbox + " " + prioStyle.Render(p.name)
-		if f.mode == FilterModePriority && f.priorityIdx == i {
-			line = style.Render(prefix + checkbox + " " + p.name)
-		}
-		lines = append(lines, line)
-	}
-
-	lines = append(lines, "")
-
-	// Labels section
-	lines = append(lines, styles.PreviewLabelStyle().Render("Labels:"))
-	if len(f.availableLabels) == 0 {
-		lines = append(lines, styles.HelpHintStyle().Render("  No labels in board"))
-	} else {
-		for i, label := range f.availableLabels {
-			checkbox := "[ ]"
-			if f.selectedLabels[label] {
-				checkbox = "[x]"
-			}
-
-			prefix := "  "
-			style := styles.TaskNormalStyle()
-			if f.mode == FilterModeLabels && f.labelIdx == i {
-				prefix = "▶ "
-				style = styles.TaskSelectedStyle()
-			}
-
-			line := prefix + checkbox + " " + style.Render(label)
-			lines = append(lines, line)
-		}
-	}
-
-	lines = append(lines, "")
-
-	// Active filter summary
+	// Active filter summary at top (prominent position)
 	if f.HasFilters() {
 		var filterParts []string
 		for p, isSelected := range f.selectedPriorities {
@@ -260,12 +192,85 @@ func (f *Filter) View(width, height int) string {
 				filterParts = append(filterParts, label)
 			}
 		}
-		lines = append(lines, styles.SuccessStyle().Render(fmt.Sprintf("Active: %s", strings.Join(filterParts, ", "))))
+		lines = append(lines, styles.SuccessStyle().Render("✓ Active: "+strings.Join(filterParts, ", ")))
 		lines = append(lines, "")
 	}
 
-	// Help text
-	lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Space/x: toggle  c: clear  Enter: apply  Esc: cancel"))
+	// Priority section with section card styling
+	priorityLines := []string{}
+	priorityLines = append(priorityLines, styles.SectionCardTitleStyle().Render("Priority"))
+
+	priorities := []struct {
+		p    model.Priority
+		name string
+	}{
+		{model.PriorityHigh, "High"},
+		{model.PriorityMedium, "Medium"},
+		{model.PriorityLow, "Low"},
+		{model.PriorityNone, "None"},
+	}
+
+	for i, p := range priorities {
+		var checkbox string
+		if f.selectedPriorities[p.p] {
+			checkbox = styles.CheckboxCheckedStyle().Render("[✓]")
+		} else {
+			checkbox = styles.CheckboxUncheckedStyle().Render("[ ]")
+		}
+
+		var prefix string
+		var nameDisplay string
+		if f.mode == FilterModePriority && f.priorityIdx == i {
+			prefix = styles.ActiveIndicator()
+			nameDisplay = styles.FormFieldActiveLabelStyle().Render(p.name)
+		} else {
+			prefix = styles.InactiveIndicator()
+			nameDisplay = styles.PriorityStyle(p.p).Render(p.name)
+		}
+
+		priorityLines = append(priorityLines, prefix+checkbox+" "+nameDisplay)
+	}
+
+	lines = append(lines, styles.SectionCardStyle().Render(strings.Join(priorityLines, "\n")))
+	lines = append(lines, "")
+
+	// Labels section with section card styling
+	labelLines := []string{}
+	labelLines = append(labelLines, styles.SectionCardTitleStyle().Render("Labels"))
+
+	if len(f.availableLabels) == 0 {
+		labelLines = append(labelLines, styles.HelpHintStyle().Render("No labels in board"))
+	} else {
+		for i, label := range f.availableLabels {
+			var checkbox string
+			if f.selectedLabels[label] {
+				checkbox = styles.CheckboxCheckedStyle().Render("[✓]")
+			} else {
+				checkbox = styles.CheckboxUncheckedStyle().Render("[ ]")
+			}
+
+			var prefix string
+			var labelDisplay string
+			if f.mode == FilterModeLabels && f.labelIdx == i {
+				prefix = styles.ActiveIndicator()
+				labelDisplay = styles.FormFieldActiveLabelStyle().Render(label)
+			} else {
+				prefix = styles.InactiveIndicator()
+				labelDisplay = styles.PopupItemStyle().Render(label)
+			}
+
+			labelLines = append(labelLines, prefix+checkbox+" "+labelDisplay)
+		}
+	}
+
+	lines = append(lines, styles.SectionCardStyle().Render(strings.Join(labelLines, "\n")))
+	lines = append(lines, "")
+
+	// Separator line above hints
+	lines = append(lines, styles.DialogSeparator(40))
+
+	// Help text with consistent styling
+	lines = append(lines, styles.KeyboardHintBarStyle().Render("j/k:navigate  Space/x:toggle  c:clear  Enter:apply  Esc:cancel"))
 
 	content := strings.Join(lines, "\n")
 

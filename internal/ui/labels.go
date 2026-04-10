@@ -161,9 +161,9 @@ func (le *LabelEditor) View() string {
 				labelDisplay = labelName
 			}
 			if i == le.selectedIdx {
-				line = styles.PopupSelectedItemStyle().Render("▶ " + labelDisplay)
+				line = styles.ActiveIndicator() + labelDisplay
 			} else {
-				line = styles.PopupItemStyle().Render("  " + labelDisplay)
+				line = styles.InactiveIndicator() + labelDisplay
 			}
 			lines = append(lines, line)
 		}
@@ -171,23 +171,25 @@ func (le *LabelEditor) View() string {
 
 	lines = append(lines, "")
 
-	// Add label input
-	inputLabel := "Add:"
+	// Add label input with proper styling
+	var inputLabel string
 	if le.selectedIdx == -1 && !le.editing {
-		inputLabel = "▶ Add:"
-	}
-	lines = append(lines, styles.PreviewLabelStyle().Render(inputLabel))
-	if le.editing {
-		lines = append(lines, le.input.View())
+		inputLabel = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render("Add:")
 	} else {
-		lines = append(lines, styles.HelpHintStyle().Render("(press Enter or 'a' to add)"))
+		inputLabel = styles.InactiveIndicator() + styles.FormFieldLabelStyle().Render("Add:")
+	}
+	lines = append(lines, inputLabel)
+	if le.editing {
+		lines = append(lines, "    "+le.input.View())
+	} else {
+		lines = append(lines, styles.HelpHintStyle().Render("    (press Enter or 'a' to add)"))
 	}
 
 	lines = append(lines, "")
-	lines = append(lines, styles.HelpHintStyle().Render("j/k: navigate  Enter: save  d: delete label  Esc: done"))
+	lines = append(lines, styles.KeyboardHintBarStyle().Render("j/k:navigate  Enter:save  d:delete  Esc:done"))
 
 	content := strings.Join(lines, "\n")
 
-	// Popup style - fixed width, no height constraint
+	// Popup style - fixed width 50
 	return styles.ModalStyle().Width(50).Render(content)
 }
