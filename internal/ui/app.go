@@ -1658,11 +1658,6 @@ func (a *App) renderHelpOverlay() string {
 	return styles.ModalStyle().Width(editWidth).Height(a.state.Height - 4).Render(help)
 }
 
-func (a *App) renderStatsOverlay() string {
-	statsView := NewStatsView(a.state.Board, a.state.Width, a.state.Height)
-	return statsView.View()
-}
-
 // renderStatsScreen renders the statistics as a full screen view
 func (a *App) renderStatsScreen() string {
 	statsView := NewStatsView(a.state.Board, a.state.Width, a.state.Height)
@@ -1833,35 +1828,6 @@ func overlayDialog(background, dialog string, width, height int) string {
 
 	// Create layers
 	bgLayer := lipgloss.NewLayer(background)
-	dialogLayer := lipgloss.NewLayer(dialog).X(x).Y(y).Z(1)
-
-	// Create compositor and render
-	compositor := lipgloss.NewCompositor(bgLayer, dialogLayer)
-	return compositor.Render()
-}
-
-// overlayDialogDimmed overlays a dialog with a dimmed background to indicate focus
-func overlayDialogDimmed(background, dialog string, width, height int) string {
-	// Dim the background by applying faint styling
-	dimStyle := lipgloss.NewStyle().Faint(true)
-	dimmedBg := dimStyle.Render(background)
-
-	// Calculate dialog dimensions
-	dialogWidth := lipgloss.Width(dialog)
-	dialogHeight := lipgloss.Height(dialog)
-
-	// Center the dialog
-	x := (width - dialogWidth) / 2
-	y := (height - dialogHeight) / 2
-	if x < 0 {
-		x = 0
-	}
-	if y < 0 {
-		y = 0
-	}
-
-	// Create layers
-	bgLayer := lipgloss.NewLayer(dimmedBg)
 	dialogLayer := lipgloss.NewLayer(dialog).X(x).Y(y).Z(1)
 
 	// Create compositor and render
