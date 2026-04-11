@@ -1,15 +1,16 @@
 :root {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: #21262d;
-  --text-primary: #f0f6fc;
-  --text-secondary: #8b949e;
-  --accent: #58a6ff;
-  --accent-hover: #79b8ff;
-  --border: #30363d;
-  --success: #3fb950;
-  --warning: #d29922;
-  --danger: #f85149;
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #313244;
+  --bg-card: #45475a;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #6c7086;
+  --accent: #74c7ec;
+  --accent-hover: #8fd4f0;
+  --border: #585b70;
+  --success: #a6e3a1;
+  --warning: #f9e2af;
+  --danger: #f38ba8;
 }
 
 * {
@@ -272,13 +273,14 @@ section h2 span {
 /* Screenshots */
 .screenshots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 30px;
 }
 
 .screenshot {
   overflow: hidden;
   border: 1px solid var(--border);
+  border-radius: 8px;
   transition: transform 0.2s;
 }
 
@@ -288,8 +290,20 @@ section h2 span {
 
 .screenshot img {
   width: 100%;
-  height: auto;
+  height: 250px;
+  object-fit: cover;
+  object-position: top left;
   display: block;
+}
+
+.screenshot p {
+  padding: 12px;
+  margin: 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
 }
 
 /* Footer */

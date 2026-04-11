@@ -60,6 +60,18 @@ func main() {
 		case "version", "-v", "--version":
 			fmt.Printf("tsk version %s\ncommit: %s\nbuilt: %s\n", version, commit, date)
 			return
+
+		case "list", "boards":
+			boards, err := store.ListBoards()
+			if err != nil {
+				fmt.Printf("Error listing boards: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Found %d boards:\n", len(boards))
+			for _, b := range boards {
+				fmt.Printf("  - %s (%s): %d tasks\n", b.Name, b.ID, b.TaskCount)
+			}
+			return
 		}
 	}
 

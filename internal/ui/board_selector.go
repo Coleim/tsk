@@ -34,7 +34,11 @@ type BoardSelector struct {
 
 // NewBoardSelector creates a new board selector
 func NewBoardSelector(store *storage.Storage, currentBoard *model.Board) *BoardSelector {
-	boards, _ := store.ListBoards()
+	boards, err := store.ListBoards()
+	if err != nil {
+		// Log error for debugging
+		boards = []storage.BoardInfo{}
+	}
 
 	input := textinput.New()
 	input.Placeholder = "Board name..."
@@ -219,20 +223,20 @@ func (bs *BoardSelector) View(width, height int) string {
 				}
 
 				// Task count as secondary info
-				taskInfo := styles.HelpHintStyle().Render(fmt.Sprintf("%d tasks", board.TaskCount))
+				taskInfo := fmt.Sprintf("%d tasks", board.TaskCount)
 
 				if i == bs.selectedIdx {
-					// Selected board - use arrow indicator and accent color
-					cardContent = styles.ActiveIndicator() + styles.FormFieldActiveLabelStyle().Render(nameDisplay) + "  " + taskInfo
-					lines = append(lines, styles.TaskSelectedStyle().Render(cardContent))
+					// Selected board - accent border without background
+					cardContent = fmt.Sprintf("▶ %s  %s", nameDisplay, taskInfo)
+					lines = append(lines, styles.ListItemSelectedStyle().Render(cardContent))
 				} else if isCurrent {
 					// Current board but not selected - subtle highlight
-					cardContent = styles.InactiveIndicator() + styles.PreviewValueStyle().Render(nameDisplay) + "  " + taskInfo
-					lines = append(lines, cardContent)
+					cardContent = fmt.Sprintf("  %s  %s", nameDisplay, styles.HelpHintStyle().Render(taskInfo))
+					lines = append(lines, styles.PreviewValueStyle().Render(cardContent))
 				} else {
 					// Normal board - no special styling
-					cardContent = styles.InactiveIndicator() + styles.PopupItemStyle().Render(nameDisplay) + "  " + taskInfo
-					lines = append(lines, cardContent)
+					cardContent = fmt.Sprintf("  %s  %s", nameDisplay, styles.HelpHintStyle().Render(taskInfo))
+					lines = append(lines, styles.PopupItemStyle().Render(cardContent))
 				}
 			}
 		}

@@ -6,6 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/coliva/tsk/internal/model"
+	"github.com/coliva/tsk/pkg/palette"
 )
 
 // Theme defines the color palette for the application
@@ -52,93 +53,44 @@ type Theme struct {
 	LabelCyan   color.Color
 }
 
-// DarkTheme - Catppuccin-inspired dark theme
-var DarkTheme = Theme{
-	// Backgrounds
-	Background: lipgloss.Color("#1e1e2e"),
-	Surface:    lipgloss.Color("#313244"),
-	Elevated:   lipgloss.Color("#45475a"),
-
-	// Text
-	TextPrimary:   lipgloss.Color("#cdd6f4"),
-	TextSecondary: lipgloss.Color("#a6adc8"),
-	TextMuted:     lipgloss.Color("#6c7086"),
-
-	// Semantic
-	Accent:  lipgloss.Color("#cba6f7"),
-	Success: lipgloss.Color("#a6e3a1"),
-	Warning: lipgloss.Color("#f9e2af"),
-	Error:   lipgloss.Color("#f38ba8"),
-
-	// Border
-	Border:      lipgloss.Color("#89b4fa"),
-	BorderLight: lipgloss.Color("#585b70"),
-
-	// Status
-	StatusToDo:       lipgloss.Color("#89b4fa"),
-	StatusInProgress: lipgloss.Color("#f9e2af"),
-	StatusDone:       lipgloss.Color("#a6e3a1"),
-
-	// Priority
-	PriorityHigh:   lipgloss.Color("#f38ba8"),
-	PriorityMedium: lipgloss.Color("#fab387"),
-	PriorityLow:    lipgloss.Color("#6c7086"),
-	PriorityNone:   lipgloss.Color("#585b70"),
-
-	// Labels
-	LabelRed:    lipgloss.Color("#f38ba8"),
-	LabelOrange: lipgloss.Color("#fab387"),
-	LabelYellow: lipgloss.Color("#f9e2af"),
-	LabelGreen:  lipgloss.Color("#a6e3a1"),
-	LabelBlue:   lipgloss.Color("#89b4fa"),
-	LabelPurple: lipgloss.Color("#cba6f7"),
-	LabelPink:   lipgloss.Color("#f5c2e7"),
-	LabelCyan:   lipgloss.Color("#94e2d5"),
+// themeFromPalette converts a palette.Theme (strings) to Theme (lipgloss.Color)
+func themeFromPalette(p palette.Theme) Theme {
+	return Theme{
+		Background:       lipgloss.Color(p.Background),
+		Surface:          lipgloss.Color(p.Surface),
+		Elevated:         lipgloss.Color(p.Elevated),
+		TextPrimary:      lipgloss.Color(p.TextPrimary),
+		TextSecondary:    lipgloss.Color(p.TextSecondary),
+		TextMuted:        lipgloss.Color(p.TextMuted),
+		Accent:           lipgloss.Color(p.Accent),
+		Success:          lipgloss.Color(p.Success),
+		Warning:          lipgloss.Color(p.Warning),
+		Error:            lipgloss.Color(p.Error),
+		Border:           lipgloss.Color(p.Border),
+		BorderLight:      lipgloss.Color(p.BorderLight),
+		StatusToDo:       lipgloss.Color(p.StatusToDo),
+		StatusInProgress: lipgloss.Color(p.StatusInProgress),
+		StatusDone:       lipgloss.Color(p.StatusDone),
+		PriorityHigh:     lipgloss.Color(p.PriorityHigh),
+		PriorityMedium:   lipgloss.Color(p.PriorityMedium),
+		PriorityLow:      lipgloss.Color(p.PriorityLow),
+		PriorityNone:     lipgloss.Color(p.PriorityNone),
+		LabelRed:         lipgloss.Color(p.LabelRed),
+		LabelOrange:      lipgloss.Color(p.LabelOrange),
+		LabelYellow:      lipgloss.Color(p.LabelYellow),
+		LabelGreen:       lipgloss.Color(p.LabelGreen),
+		LabelBlue:        lipgloss.Color(p.LabelBlue),
+		LabelPurple:      lipgloss.Color(p.LabelPurple),
+		LabelPink:        lipgloss.Color(p.LabelPink),
+		LabelCyan:        lipgloss.Color(p.LabelCyan),
+	}
 }
 
-// LightTheme - Light mode colors
-var LightTheme = Theme{
-	// Backgrounds
-	Background: lipgloss.Color("#eff1f5"),
-	Surface:    lipgloss.Color("#e6e9ef"),
-	Elevated:   lipgloss.Color("#dce0e8"),
+// DarkTheme - Catppuccin Mocha inspired dark theme
+var DarkTheme = themeFromPalette(palette.DarkTheme)
 
-	// Text
-	TextPrimary:   lipgloss.Color("#4c4f69"),
-	TextSecondary: lipgloss.Color("#6c6f85"),
-	TextMuted:     lipgloss.Color("#9ca0b0"),
-
-	// Semantic
-	Accent:  lipgloss.Color("#8839ef"),
-	Success: lipgloss.Color("#40a02b"),
-	Warning: lipgloss.Color("#df8e1d"),
-	Error:   lipgloss.Color("#d20f39"),
-
-	// Border
-	Border:      lipgloss.Color("#1e66f5"),
-	BorderLight: lipgloss.Color("#bcc0cc"),
-
-	// Status
-	StatusToDo:       lipgloss.Color("#1e66f5"),
-	StatusInProgress: lipgloss.Color("#df8e1d"),
-	StatusDone:       lipgloss.Color("#40a02b"),
-
-	// Priority
-	PriorityHigh:   lipgloss.Color("#d20f39"),
-	PriorityMedium: lipgloss.Color("#fe640b"),
-	PriorityLow:    lipgloss.Color("#9ca0b0"),
-	PriorityNone:   lipgloss.Color("#bcc0cc"),
-
-	// Labels
-	LabelRed:    lipgloss.Color("#d20f39"),
-	LabelOrange: lipgloss.Color("#fe640b"),
-	LabelYellow: lipgloss.Color("#df8e1d"),
-	LabelGreen:  lipgloss.Color("#40a02b"),
-	LabelBlue:   lipgloss.Color("#1e66f5"),
-	LabelPurple: lipgloss.Color("#8839ef"),
-	LabelPink:   lipgloss.Color("#ea76cb"),
-	LabelCyan:   lipgloss.Color("#179299"),
-}
+// LightTheme - Catppuccin Latte inspired light theme
+var LightTheme = themeFromPalette(palette.LightTheme)
 
 // CurrentTheme holds the active theme
 var CurrentTheme = &DarkTheme
@@ -235,6 +187,16 @@ func TaskSelectedStyle() lipgloss.Style {
 		Bold(true).
 		Foreground(CurrentTheme.Accent).
 		Background(CurrentTheme.Elevated).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(CurrentTheme.Accent).
+		Padding(0, 1)
+}
+
+// ListItemSelectedStyle returns a selected list item style (border, no background)
+func ListItemSelectedStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Bold(true).
+		Foreground(CurrentTheme.Accent).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(CurrentTheme.Accent).
 		Padding(0, 1)

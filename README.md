@@ -13,9 +13,13 @@ A fast, keyboard-driven terminal task manager with Kanban-style workflow. Built 
 
 **tsk** is a terminal-based task manager that brings Kanban-style workflow to your command line. No browser, no electron, no bloat — just a fast TUI that stays out of your way.
 
-![tsk home screen](/docs/assets/screenshot_home.png)
-![tsk main view](/docs/assets/screenshot_01.png)
-![tsk task view](/docs/assets/screenshot_02.png)
+| Welcome | Main View |
+|---------|----------|
+| ![Welcome](/docs/assets/screenshot_home.png) | ![Main](/docs/assets/screenshot_01.png) |
+
+| Task Details | Statistics |
+|--------------|------------|
+| ![Details](/docs/assets/screenshot_02.png) | ![Stats](/docs/assets/stats.png) |
 
 ## Features
 
