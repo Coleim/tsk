@@ -199,15 +199,72 @@ TSK_THEME=light tsk
 export TSK_THEME=light
 ```
 
-### Dark Theme (Default)
-- Background: Deep purple-blue (#1e1e2e)
-- Accent: Lavender (#cba6f7)
-- Optimized for low-light environments
+### Color Palette Reference
 
-### Light Theme
-- Background: Light gray (#eff1f5)
-- Accent: Purple (#8839ef)
-- Optimized for well-lit environments
+Based on [Catppuccin](https://github.com/catppuccin/catppuccin) — copy-paste ready for your projects.
+
+#### Backgrounds
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| Background | `#1e1e2e` | `#eff1f5` |
+| Surface | `#313244` | `#e6e9ef` |
+| Elevated | `#45475a` | `#dce0e8` |
+
+#### Text
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| Primary | `#cdd6f4` | `#4c4f69` |
+| Secondary | `#a6adc8` | `#6c6f85` |
+| Muted | `#6c7086` | `#9ca0b0` |
+
+#### Semantic
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| Accent | `#74c7ec` | `#8839ef` |
+| Accent Hover | `#8fd4f0` | `#9a4dff` |
+| Success | `#a6e3a1` | `#40a02b` |
+| Warning | `#f9e2af` | `#df8e1d` |
+| Error | `#f38ba8` | `#d20f39` |
+
+#### Borders
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| Border | `#89b4fa` | `#1e66f5` |
+| Border Light | `#585b70` | `#bcc0cc` |
+
+#### Status
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| To Do | `#89b4fa` | `#1e66f5` |
+| In Progress | `#f9e2af` | `#df8e1d` |
+| Done | `#a6e3a1` | `#40a02b` |
+
+#### Priority
+
+| Purpose | Dark | Light |
+|---------|------|-------|
+| High | `#f38ba8` | `#d20f39` |
+| Medium | `#fab387` | `#fe640b` |
+| Low | `#6c7086` | `#9ca0b0` |
+| None | `#585b70` | `#bcc0cc` |
+
+#### Labels
+
+| Color | Dark | Light |
+|-------|------|-------|
+| Red | `#f38ba8` | `#d20f39` |
+| Orange | `#fab387` | `#fe640b` |
+| Yellow | `#f9e2af` | `#df8e1d` |
+| Green | `#a6e3a1` | `#40a02b` |
+| Blue | `#89b4fa` | `#1e66f5` |
+| Purple | `#cba6f7` | `#8839ef` |
+| Pink | `#f5c2e7` | `#ea76cb` |
+| Cyan | `#94e2d5` | `#179299` |
 
 ## Development
 
